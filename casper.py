@@ -24,7 +24,7 @@ Options:
 """  # noqa
 
 from docopt import docopt
-from state.aws import AWSState
+from states.aws import AWSState
 from services.base import (
     get_service, SUPPORTED_SERVICES
 )

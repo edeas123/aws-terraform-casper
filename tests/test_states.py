@@ -1,7 +1,7 @@
 from unittest import TestCase
-from state.aws import AWSState
+from states.aws import AWSState
 
-from mock import patch
+from unittest.mock import patch
 import os
 import shutil
 
@@ -146,7 +146,7 @@ class TestTerraformState(TestCase):
 
 
 def load_sample(filename):
-    filepath = os.path.join(os.getcwd(), "samples", filename)
+    filepath = os.path.join(os.getcwd(), "tests", "samples", filename)
     with open(filepath, "r") as fid:
         sample = fid.read()
 

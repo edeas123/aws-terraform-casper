@@ -1,7 +1,6 @@
-from state.terraform import TerraformState
+from states.terraform import TerraformState
 
 import re
-import boto3
 
 
 class AWSState(TerraformState):
@@ -17,6 +16,9 @@ class AWSState(TerraformState):
         }
 
     def _save_state(self):
+        pass
+
+    def _load_state(self):
         pass
 
     @classmethod
