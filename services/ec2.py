@@ -5,22 +5,12 @@ import boto3
 
 class EC2Service(BaseService):
 
-    def __init__(self, vendor: str, profile: str = None):
+    def __init__(self, profile: str = None):
 
         super().__init__(profile=profile)
-        if vendor == "terraform":
-            self._resources_groups = {
-                'aws_instance': 'Instance',
-                'aws_autoscaling_group': 'AutoScalingGroup',
-                'aws_spot_instance_request': 'Instance',
-                'aws_security_group': 'SecurityGroup',
-            }
-        elif vendor == "aws":
-            self._resources_groups = {
-                'aws_instance': 'Instance',
-                'aws_autoscaling_group': 'AutoScalingGroup',
-                'aws_security_group': 'SecurityGroup',
-            }
+        self._resources_groups = [
+            'aws_instance', 'aws_autoscaling_group', 'aws_security_group'
+        ]
 
     def _get_live_aws_instance(self):
 
@@ -87,45 +77,44 @@ class EC2Service(BaseService):
 
         return sg_ids
 
-    def _get_state_aws_instance(self, text):
-        return [self._get_field('id', text)]
-
-    def _get_state_aws_autoscaling_group(self, text):
-        return [self._get_field('id', text)]
-
-    def _get_state_aws_spot_instance_request(self, text):
-        return [self._get_field('spot_instance_id', text)]
-
-    def _get_state_aws_security_group(self, text):
-        return [self._get_field('id', text)]
-
     def scan_service(self, ghosts):
-        if len(ghosts['AutoScalingGroup']['ids']) > 0:
+
+        def batch(iterable, n=1):
+            ln = len(iterable)
+            for ndx in range(0, ln, n):
+                yield iterable[ndx:min(ndx + n, ln)]
+
+        if len(ghosts['aws_autoscaling_group']['ids']) > 0:
             # get the instances in defaulting asg and add it to the
             # overall defaulting instances
 
-            defaulting_asgs = ghosts['AutoScalingGroup']['ids']
+            instances = set(ghosts['aws_instance']['ids'])
+            defaulting_asgs = ghosts['aws_autoscaling_group']['ids']
             asg_client = self.session.client('autoscaling')
-            asgs = asg_client.describe_auto_scaling_groups(
-                AutoScalingGroupNames=defaulting_asgs
-            )
-            instances = [
-                instance['InstanceId'] for sublist in (
-                    afull['Instances'] for afull in asgs['AutoScalingGroups']
-                ) for instance in sublist
-            ]
-
-            while 'NextToken' in asgs.keys():
+            for defaulting_asgs_batch in batch(defaulting_asgs, 50):
                 asgs = asg_client.describe_auto_scaling_groups(
-                    AutoScalingGroupNames=defaulting_asgs
+                    AutoScalingGroupNames=defaulting_asgs_batch
                 )
-                instances.extend([
+                instances.update([
                     instance['InstanceId'] for sublist in (
-                        afull['Instances'] for afull in asgs['AutoScalingGroups']
+                        afull['Instances'] for afull in
+                        asgs['AutoScalingGroups']
                     ) for instance in sublist
                 ])
 
-            ghosts['Instance']['ids'].extend(instances)
-            ghosts['Instance']['count'] = len(
-                ghosts['Instance']['ids']
+                while 'NextToken' in asgs.keys():
+                    asgs = asg_client.describe_auto_scaling_groups(
+                        AutoScalingGroupNames=defaulting_asgs_batch,
+                        NextToken=asgs['NextToken']
+                    )
+                    instances.update([
+                        instance['InstanceId'] for sublist in (
+                            afull['Instances'] for afull in
+                            asgs['AutoScalingGroups']
+                        ) for instance in sublist
+                    ])
+
+            ghosts['aws_instance']['ids'] = list(instances)
+            ghosts['aws_instance']['count'] = len(
+                ghosts['aws_instance']['ids']
             )

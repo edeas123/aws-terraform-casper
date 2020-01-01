@@ -17,17 +17,6 @@ class BaseService(object):
     def resources_groups(self):
         return self._resources_groups
 
-    @classmethod
-    def _get_field(cls, field, resource):
-        pattern = f"(?<={field})(.*?)(?=\\n)"
-        return re.search(pattern, resource)[0].lstrip(' =')
-
-    def process_response(self, group, text):
-
-        # TODO: handle errors of the processor not implemented
-        processor = f"_get_state_{group}"
-        return getattr(self, processor)(text)
-
     def get_cloud_resources(self, group):
 
         # TODO: handle errors of the handler not implemented

@@ -1,0 +1,5 @@
+id                                             = swi-erwttegd
+associate_public_ip_address                    = true
+block_duration_minutes                         = 0
+ebs_block_device.#                             = 0
+ebs_optimized                                  = false
