@@ -38,8 +38,8 @@ The following environment variable can be set:
 ## Example
 
 Casper `BUILD` is used first to collect and store information about the infrastructure
-captured in terraform. Casper collects the ID of all the resources and save their hash
-to an S3 bucket.
+captured in terraform. Casper collects the ID of all the resources and it to the bucket
+specified in `CASPER_BUCKET`.
 
 ```
 $ casper build --root-dir=. --aws-profile=casper_profile
@@ -67,13 +67,13 @@ Terraform
 
 EC2
 --------------------------------------------------------
-17 ghost aws_instance found
-39 ghost aws_autoscaling_group found
-11 ghost aws_security_group found
+1 ghost aws_instance found
+3 ghost aws_autoscaling_group found
+1 ghost aws_security_group found
 
 S3
 --------------------------------------------------------
-14 ghost aws_s3_bucket found
+1 ghost aws_s3_bucket found
 
 ```
 

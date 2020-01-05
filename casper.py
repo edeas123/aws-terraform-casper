@@ -177,7 +177,7 @@ def main(args):
         print("--------------------------------------------------------")
         print(f"{states} state(s) checked")
         print(f"{resource_groups} supported resource group(s) discovered")
-        print(f"{resources} resource(s) saved to bucket")
+        print(f"{resources} state resource(s) saved to bucket")
 
     if scan_command:
         svc_ghost = {}
