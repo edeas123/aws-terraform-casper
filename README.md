@@ -1,4 +1,6 @@
 # Casper
+[![CircleCI](https://circleci.com/gh/edeas123/aws-terraform-casper.svg?style=svg&circle-token=5115202ddbba134358fefd5b36e34857cc2bbfe0)](https://circleci.com/gh/edeas123/aws-terraform-casper)
+
 Casper is a tool for detecting ghost resources running on your AWS cloud environment.
 
 It works by ...
