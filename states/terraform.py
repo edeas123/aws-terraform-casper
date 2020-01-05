@@ -32,7 +32,6 @@ class TerraformState(object):
         else:
             self.state_resources = {}
 
-        self._resource_group_remap = {}
         self._exclude_state_res = set()
         self._counter = {
             'state': 0,

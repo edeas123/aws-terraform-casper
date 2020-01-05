@@ -32,8 +32,9 @@ class TestTerraformState(TestCase):
         self.aws = AWSState()
         self._make_dir(self.root_dir)
 
+    @patch.object(AWSState, '_save_state')
     @patch('command.TerraformCommand.run_command')
-    def test_build_state_resources_state_management(self, cmd):
+    def test_build_state_resources_state_management(self, cmd, _):
         self._make_dir(os.path.join(self.root_dir, "main"))
         self._make_file(os.path.join(self.root_dir, "main", "real.tf"))
 
@@ -54,8 +55,9 @@ class TestTerraformState(TestCase):
             "unexcluded directory with a .tf file"
         )
 
+    @patch.object(AWSState, '_save_state')
     @patch('command.TerraformCommand.run_command')
-    def test_build_state_resources(self, cmd):
+    def test_build_state_resources(self, cmd, _):
         self._make_dir(os.path.join(self.root_dir, "main"))
         self._make_file(os.path.join(self.root_dir, "main", "real.tf"))
 
@@ -82,13 +84,27 @@ class TestTerraformState(TestCase):
             self.aws.state_resources
         )
 
+    @patch.object(AWSState, '_save_state')
     @patch('command.TerraformCommand.run_command')
-    def test_build_state_resources_save_state(self, cmd):
-        pass
+    def test_build_state_resources_save_state(self, _, mock_save):
 
+        self._make_dir(os.path.join(self.root_dir, "main"))
+        self._make_file(os.path.join(self.root_dir, "main", "real.tf"))
+
+        self.aws.build_state_resources(start_dir=self.root_dir)
+        mock_save.assert_called_once()
+
+    @patch.object(AWSState, '_load_state')
+    @patch('command.TerraformCommand.run_command')
+    def test_build_state_resources_load_state(self, _, mock_load):
+
+        _ = AWSState(load_state=True)
+        mock_load.assert_called_once()
+
+    @patch.object(AWSState, '_save_state')
     @patch('command.TerraformCommand.run_command')
     @patch('logging.Logger.warning')
-    def test_build_state_resources_removed_resource(self, logger, cmd):
+    def test_build_state_resources_removed_resource(self, logger, cmd, _):
         self._make_dir(os.path.join(self.root_dir, "main"))
         self._make_file(os.path.join(self.root_dir, "main", "real.tf"))
 
@@ -111,10 +127,11 @@ class TestTerraformState(TestCase):
             "'aws_instance.empty' no longer exist in the state: temp/main"
         )
 
+    @patch.object(AWSState, '_save_state')
     @patch('command.TerraformCommand.run_command')
     @patch('logging.Logger.debug')
     def test_build_state_resources_unsupported_resource(
-        self, logger, cmd
+        self, logger, cmd, _
     ):
         self._make_dir(os.path.join(self.root_dir, "main"))
         self._make_file(os.path.join(self.root_dir, "main", "real.tf"))
