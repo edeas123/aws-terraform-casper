@@ -12,13 +12,14 @@ class AWSState(TerraformState):
         self,
         profile=None,
         bucket=None,
+        state_file=None,
         load_state=False
     ):
         self._resource_group_remap = {
             'aws_spot_instance_request': 'aws_instance'
         }
         self.session = boto3.Session()
-        self.state_object = "terraform_state"
+        self.state_object = state_file
 
         if profile:
             self.session = boto3.Session(profile_name=profile)
@@ -59,4 +60,7 @@ class AWSState(TerraformState):
         return self._get_field('id', text)
 
     def _get_state_aws_s3_bucket(self, text):
+        return self._get_field('id', text)
+
+    def _get_state_aws_iam_user(self, text):
         return self._get_field('id', text)

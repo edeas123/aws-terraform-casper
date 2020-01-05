@@ -2,8 +2,8 @@
 Casper.
 
 Usage:
-    casper.py build [--root-dir=<dir> --bucket-name=<bn> --aws-profile=<profile> --exclude-dirs=<ed> --exclude-state-res=<esr>]
-    casper.py scan  [--root-dir=<dir> --bucket-name=<bn> --aws-profile=<profile> --service=<svc> --exclude-cloud-res=<ecr> --rebuild  --summary-only=<b>  --output-file=<f>]
+    casper.py build [--root-dir=<dir> --bucket-name=<bn> --state-file=<sf> --aws-profile=<profile> --exclude-dirs=<ed> --exclude-state-res=<esr>]
+    casper.py scan  [--root-dir=<dir> --bucket-name=<bn> --state-file=<sf> --aws-profile=<profile> --service=<svc> --exclude-cloud-res=<ecr> --rebuild  --summary-only=<b>  --output-file=<f>]
     casper.py -h | --help
     casper.py --version
 
@@ -12,6 +12,7 @@ Options:
     --version                               Show version.
     --root-dir=<dir>                        The root terraform directory [default: . ].
     --bucket-name=<bn>                      Bucket name created to save and retrieve state.
+    --state-file=<sf>                       Name used to save state file in the bucket [default: terraform_state].
     --exclude-dirs=<ed>                     Comma separated list of directories to ignore.
     --exclude-state-res=<res>               Comma separated list of terraform state resources to ignore.
     --aws-profile=<profile>                 AWS profile to use.
@@ -45,6 +46,7 @@ class Casper(object):
         self,
         start_directory: str = None,
         bucket_name: str = "",
+        state_file: str = "terraform_state",
         profile: str = None,
         exclude_resources: set = None,
         load_state: bool = False
@@ -65,6 +67,7 @@ class Casper(object):
         self.tf = AWSState(
             profile=self.profile,
             bucket=self.bucket,
+            state_file=state_file,
             load_state=load_state
         )
 
@@ -119,6 +122,7 @@ def main(args):
             )
             return
 
+    state_file = args['--state-file']
     root_dir = args['--root-dir']
 
     exclude_dirs = args['--exclude-dirs']
@@ -154,10 +158,11 @@ def main(args):
 
     casper = Casper(
         start_directory=root_dir,
+        state_file=state_file,
         bucket_name=bucket_name,
         profile=aws_profile,
         exclude_resources=exclude_cloud_res,
-        load_state=not(build_command)
+        load_state=not build_command
     )
 
     if build_command:
