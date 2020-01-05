@@ -17,7 +17,8 @@ class TerraformState(object):
     def __init__(
         self,
         profile=None,
-        bucket=None
+        bucket=None,
+        load_state=False
     ):
         self.profile = profile
         self.bucket = bucket
@@ -25,7 +26,12 @@ class TerraformState(object):
         self.command = TerraformCommand(
             profile=self.profile
         )
-        self.state_resources = {}
+
+        if load_state:
+            self._load_state()
+        else:
+            self.state_resources = {}
+
         self._resource_group_remap = {}
         self._exclude_state_res = set()
         self._counter = {

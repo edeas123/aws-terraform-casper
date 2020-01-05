@@ -1,7 +1,5 @@
 from services.base import BaseService
 
-import boto3
-
 
 class EC2Service(BaseService):
 
@@ -27,7 +25,7 @@ class EC2Service(BaseService):
 
         # TODO: find better way of doing thing
         # remove dynamic instances
-        asg_client = boto3.client('autoscaling')
+        asg_client = self.session.client('autoscaling')
         asgs = asg_client.describe_auto_scaling_instances()
 
         dynamic_instances = [
@@ -41,7 +39,7 @@ class EC2Service(BaseService):
                 instance['InstanceId'] for instance in asgs['AutoScalingInstances']
             )
 
-        return set(instances_id).difference(set(dynamic_instances))
+        return list(set(instances_id).difference(set(dynamic_instances)))
 
     def _get_live_aws_autoscaling_group(self):
 

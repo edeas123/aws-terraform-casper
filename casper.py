@@ -2,8 +2,8 @@
 Casper.
 
 Usage:
-    casper.py build [--root-dir=<dir> --bucket-name-prefix=<bn> --aws-profile=<profile> --exclude-dirs=<ed> --exclude-state-res=<esr>]
-    casper.py scan  [--root-dir=<dir> --bucket-name-prefix=<bn> --aws-profile=<profile> --service=<svc> --exclude-cloud-res=<ecr> --rebuild  --summary-only=<b>  --output-file=<f>]
+    casper.py build [--root-dir=<dir> --bucket-name=<bn> --aws-profile=<profile> --exclude-dirs=<ed> --exclude-state-res=<esr>]
+    casper.py scan  [--root-dir=<dir> --bucket-name=<bn> --aws-profile=<profile> --service=<svc> --exclude-cloud-res=<ecr> --rebuild  --summary-only=<b>  --output-file=<f>]
     casper.py -h | --help
     casper.py --version
 
@@ -11,7 +11,7 @@ Options:
     -h --help                               Show this screen.
     --version                               Show version.
     --root-dir=<dir>                        The root terraform directory [default: . ].
-    --bucket-name-prefix=<bnp>              Prefix for bucket name created to save and retrieve state.
+    --bucket-name=<bn>                      Bucket name created to save and retrieve state.
     --exclude-dirs=<ed>                     Comma separated list of directories to ignore.
     --exclude-state-res=<res>               Comma separated list of terraform state resources to ignore.
     --aws-profile=<profile>                 AWS profile to use.
@@ -44,9 +44,10 @@ class Casper(object):
     def __init__(
         self,
         start_directory: str = None,
-        bucket_name_prefix: str = "",
+        bucket_name: str = "",
         profile: str = None,
         exclude_resources: set = None,
+        load_state: bool = False
     ):
 
         if start_directory is None or start_directory == ".":
@@ -59,12 +60,12 @@ class Casper(object):
         self.start_dir = start_directory
         self.profile = profile
 
-        dir_hash = hashlib.md5(self.start_dir.encode()).hexdigest()
-        self.bucket = f"casper-{bucket_name_prefix}-{dir_hash}"
+        self.bucket = bucket_name
 
         self.tf = AWSState(
             profile=self.profile,
-            bucket=self.bucket
+            bucket=self.bucket,
+            load_state=load_state
         )
 
     def build(self, exclude_directories=None, exclude_state_res=None):
@@ -106,9 +107,17 @@ def main(args):
 
     aws_profile = args['--aws-profile']
 
-    bucket_name_prefix = args['--bucket-name-prefix']
-    if bucket_name_prefix is None:
-        bucket_name_prefix = ""
+    bucket_name = args['--bucket-name']
+    if bucket_name is None:
+        casper_bucket = os.environ.get('CASPER_BUCKET', None)
+        if casper_bucket:
+            bucket_name = casper_bucket
+        else:
+            print(
+                "Please pass the bucket_name argument or use the "
+                "CASPER_BUCKET environment variable"
+            )
+            return
 
     root_dir = args['--root-dir']
 
@@ -140,15 +149,16 @@ def main(args):
     summary_only = args['--summary-only']
     output_file = args['--output-file']
 
-    casper = Casper(
-        start_directory=root_dir,
-        bucket_name_prefix=bucket_name_prefix,
-        profile=aws_profile,
-        exclude_resources=exclude_cloud_res
-    )
-
     if rebuild:
         build_command = True
+
+    casper = Casper(
+        start_directory=root_dir,
+        bucket_name=bucket_name,
+        profile=aws_profile,
+        exclude_resources=exclude_cloud_res,
+        load_state=not(build_command)
+    )
 
     if build_command:
         print("Building states...")
@@ -161,21 +171,21 @@ def main(args):
         states = counters['state']
         resource_groups = counters['resource_group']
         resources = counters['resource']
+
         print("")
+        print("Terraform")
         print("--------------------------------------------------------")
-        print("")
-        print(f"{states} state(s) discovered")
-        print(f"{resource_groups} supported resource group(s) collected")
+        print(f"{states} state(s) checked")
+        print(f"{resource_groups} supported resource group(s) discovered")
         print(f"{resources} resource(s) saved to bucket")
 
     if scan_command:
         svc_ghost = {}
+        print("")
         for svc in service:
-            print(f"Service: {svc}")
-            print("Comparing ...")
+            print(svc.upper())
             svc_ghost[svc] = casper.scan(service_name=svc)
             print("--------------------------------------------------------")
-            print("")
             for key in svc_ghost[svc].keys():
                 print(f"{svc_ghost[svc][key]['count']} ghost {key} found")
             print("")
