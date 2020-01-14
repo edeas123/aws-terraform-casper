@@ -3,15 +3,30 @@
 
 Casper is a tool for detecting ghost resources running on your AWS cloud environment.
 
-It works by ...
-
 ## Features
+
+Some of the benefits Casper provides includes:
+* Security and resource management: Ghosts in your infrastructure can be a 
+sign of a security exploit because the resources were not provisioned 
+through the traditional means used in your organization.
+* Coverage: It would help to measure coverage for an organization gradually using 
+Terraform to provision their AWS infrastructure.
 
 ## Installation
 
+Do the following to install Casper:
+```
+git clone https://github.com/edeas123/aws-terraform-casper.git
+pip install -r requirements.txt
+```
+
+## Requirements
+
+Casper was tested with the following minimum IAM permission:
+
 ## Environment Variable
 
-The following environment variable can be set:
+The following environment variable should be set:
 
 | Variable        | Description |
 | ------------- |:-------------|
@@ -37,27 +52,26 @@ The following environment variable can be set:
 
 ## Example
 
-Casper `BUILD` is used first to collect and store information about the infrastructure
-captured in terraform. Casper collects the ID of all the resources and it to the bucket
-specified in `CASPER_BUCKET`.
+Casper `BUILD` collects and stores information about the infrastructure
+captured in terraform. Casper collects the ID of all the resources and stores it in `CASPER_BUCKET`.
 
 ```
-$ casper build --root-dir=. --aws-profile=casper_profile
+$ python casper build --root-dir=/Users/username/terraform_dev_dir --aws-profile=casper_profile
 
----------------------------------------
+Terraform
+--------------------------------------------
 14 state(s) checked
 3 supported resource group(s) discovered
 21 resource(s) saved to bucket
 
 ```
 
-Casper `SCAN` is used to compare the resources on terraform with that running in
-the cloud, and returns the summary and details of all the resources found in the
-cloud but not captured in terraform. SCAN uses the terraform information that was
-saved to S3 or it rebuilds that information (if the `--rebuild` option is used)
+Casper `SCAN` compares the resources on terraform with that running in the cloud, and returns the summary and 
+details of all the resources found in the cloud but not captured in terraform. SCAN uses the terraform information that was
+saved to `CASPER_BUCKET` or it rebuilds that information (if the `--rebuild` argument is set)
 
 ```
-$ casper scan --rebuild --root-dir=. --aws-profile=casper_profile
+$ casper scan --rebuild --root-dir=/Users/username/terraform_dev_dir --aws-profile=casper_profile
 
 Terraform
 --------------------------------------------------------
@@ -76,10 +90,6 @@ S3
 1 ghost aws_s3_bucket found
 
 ```
-
-## Requirements
-
-Casper was tested with the following minimum IAM permission:
 
 ## Contributing
 
