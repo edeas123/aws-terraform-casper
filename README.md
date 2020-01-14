@@ -56,7 +56,7 @@ Casper `BUILD` collects and stores information about the infrastructure
 captured in terraform. Casper collects the ID of all the resources and stores it in `CASPER_BUCKET`.
 
 ```
-$ python casper build --root-dir=/Users/username/terraform_dev_dir --aws-profile=casper_profile
+$ python casper.py build --root-dir=/Users/username/terraform_dev_dir --aws-profile=casper_profile
 
 Terraform
 --------------------------------------------
@@ -71,7 +71,7 @@ details of all the resources found in the cloud but not captured in terraform. S
 saved to `CASPER_BUCKET` or it rebuilds that information (if the `--rebuild` argument is set)
 
 ```
-$ casper scan --rebuild --root-dir=/Users/username/terraform_dev_dir --aws-profile=casper_profile
+$ python casper.py scan --rebuild --root-dir=/Users/username/terraform_dev_dir --aws-profile=casper_profile
 
 Terraform
 --------------------------------------------------------
