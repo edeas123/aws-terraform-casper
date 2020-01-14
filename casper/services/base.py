@@ -26,7 +26,7 @@ class BaseService(object):
         raise NotImplementedError
 
 
-path = os.path.join(os.getcwd(), "services")
+path = os.path.join(os.getcwd(), "casper", "services")
 SUPPORTED_SERVICES = sorted(
     set(
         i.partition('.')[0]

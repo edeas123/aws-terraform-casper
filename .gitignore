@@ -2,3 +2,7 @@
 .venv
 __pycache
 __pycache__
+dist
+build
+Casper.egg-info
+.todo

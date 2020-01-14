@@ -25,8 +25,8 @@ Options:
 """  # noqa
 
 from docopt import docopt
-from states.aws import AWSState
-from services.base import (
+from casper.states.aws import AWSState
+from casper.services.base import (
     get_service, SUPPORTED_SERVICES
 )
 
@@ -34,7 +34,6 @@ import logging.config
 import logging
 import os
 import json
-import hashlib
 
 # create logger
 logging.config.fileConfig('logging.conf')

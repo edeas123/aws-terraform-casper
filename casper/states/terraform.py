@@ -2,7 +2,7 @@ import os
 import logging.config
 import logging
 
-from command import TerraformCommand
+from casper.command import TerraformCommand
 
 
 # create logger

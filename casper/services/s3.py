@@ -1,4 +1,4 @@
-from services.base import BaseService
+from casper.services.base import BaseService
 
 
 class S3Service(BaseService):

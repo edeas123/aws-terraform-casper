@@ -1,4 +1,4 @@
-from states.terraform import TerraformState
+from casper.states.terraform import TerraformState
 
 import re
 import boto3
