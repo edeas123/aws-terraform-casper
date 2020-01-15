@@ -46,7 +46,7 @@ def get_service(service_name):
     if service_name not in SUPPORTED_SERVICES:
         raise UnsupportedServiceException()
 
-    module = importlib.import_module(f"services.{service_name}")
+    module = importlib.import_module(f"casper.services.{service_name}")
     service_class = f"{service_name.upper()}Service"
     service = getattr(module, service_class)
 

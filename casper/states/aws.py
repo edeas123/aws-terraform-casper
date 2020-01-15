@@ -16,7 +16,10 @@ class AWSState(TerraformState):
         load_state=False
     ):
         self._resource_group_remap = {
-            'aws_spot_instance_request': 'aws_instance'
+            'aws_spot_instance_request': 'aws_instance',
+            'aws_spot_fleet_request': 'aws_instance',
+            'aws_ec2_fleet': 'aws_instance',
+            'aws_lb': 'aws_alb'
         }
         self.session = boto3.Session()
         self.state_object = state_file
@@ -50,6 +53,12 @@ class AWSState(TerraformState):
     def _get_state_aws_instance(self, text):
         return self._get_field('id', text)
 
+    # def _get_state_aws_spot_fleet_request(self, text):
+    #     return self._get_field('id', text)
+    #
+    # def _get_state_aws_ec2_fleet(self, text):
+    #     return self._get_field('id', text)
+
     def _get_state_aws_autoscaling_group(self, text):
         return self._get_field('id', text)
 
@@ -64,3 +73,15 @@ class AWSState(TerraformState):
 
     def _get_state_aws_iam_user(self, text):
         return self._get_field('id', text)
+
+    def _get_state_aws_iam_role(self, text):
+        return self._get_field('id', text)
+
+    def _get_state_aws_elb(self, text):
+        return self._get_field('name', text)
+
+    def _get_state_aws_alb(self, text):
+        return self._get_field('name', text)
+
+    def _get_state_aws_lb(self, text):
+        return self._get_field('name', text)

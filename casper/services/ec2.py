@@ -7,8 +7,36 @@ class EC2Service(BaseService):
 
         super().__init__(profile=profile)
         self._resources_groups = [
-            'aws_instance', 'aws_autoscaling_group', 'aws_security_group'
+            'aws_instance', 'aws_autoscaling_group', 'aws_security_group',
+            'aws_alb', 'aws_elb'
+            # 'aws_ec2_fleet', 'aws_spot_fleet_request'
         ]
+
+    def _get_live_aws_alb(self):
+        alb_client = self.session.client('elbv2')
+        alb = alb_client.describe_load_balancers()
+        lb_names = [
+            lb['LoadBalancerName']
+            for lb in alb['LoadBalancers']
+        ]
+
+        return lb_names
+
+    def _get_live_aws_elb(self):
+        elb_client = self.session.client('elb')
+        elb = elb_client.describe_load_balancers()
+        lb_names = [
+            lb['LoadBalancerName']
+            for lb in elb['LoadBalancerDescriptions']
+        ]
+
+        return lb_names
+
+    def _get_live_aws_ec2_fleet(self):
+        return []
+
+    def _get_live_aws_spot_fleet_request(self):
+        return []
 
     def _get_live_aws_instance(self):
 
