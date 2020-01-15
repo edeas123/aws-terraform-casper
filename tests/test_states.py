@@ -6,6 +6,7 @@ import os
 import shutil
 
 
+@patch('casper.command.TerraformCommand.run_command')
 class TestState(TestCase):
     root_dir = "temp"
 
@@ -33,8 +34,7 @@ class TestState(TestCase):
         self._make_dir(self.root_dir)
 
     @patch.object(AWSState, '_save_state')
-    @patch('casper.command.TerraformCommand.run_command')
-    def test_build_state_resources_state_management(self, cmd, _):
+    def test_build_state_resources_state_management(self, _, cmd):
         self._make_dir(os.path.join(self.root_dir, "main"))
         self._make_file(os.path.join(self.root_dir, "main", "real.tf"))
 
@@ -56,8 +56,7 @@ class TestState(TestCase):
         )
 
     @patch.object(AWSState, '_save_state')
-    @patch('casper.command.TerraformCommand.run_command')
-    def test_build_state_resources(self, cmd, _):
+    def test_build_state_resources(self, _, cmd):
         self._make_dir(os.path.join(self.root_dir, "main"))
         self._make_file(os.path.join(self.root_dir, "main", "real.tf"))
 
@@ -85,8 +84,7 @@ class TestState(TestCase):
         )
 
     @patch.object(AWSState, '_save_state')
-    @patch('casper.command.TerraformCommand.run_command')
-    def test_build_state_resources_save_state(self, _, mock_save):
+    def test_build_state_resources_save_state(self, mock_save, _):
 
         self._make_dir(os.path.join(self.root_dir, "main"))
         self._make_file(os.path.join(self.root_dir, "main", "real.tf"))
@@ -95,16 +93,14 @@ class TestState(TestCase):
         mock_save.assert_called_once()
 
     @patch.object(AWSState, '_load_state')
-    @patch('casper.command.TerraformCommand.run_command')
-    def test_build_state_resources_load_state(self, _, mock_load):
+    def test_build_state_resources_load_state(self, mock_load, _):
 
         _ = AWSState(load_state=True)
         mock_load.assert_called_once()
 
     @patch.object(AWSState, '_save_state')
-    @patch('casper.command.TerraformCommand.run_command')
     @patch('logging.Logger.warning')
-    def test_build_state_resources_removed_resource(self, logger, cmd, _):
+    def test_build_state_resources_removed_resource(self, logger, _, cmd):
         self._make_dir(os.path.join(self.root_dir, "main"))
         self._make_file(os.path.join(self.root_dir, "main", "real.tf"))
 
@@ -128,10 +124,9 @@ class TestState(TestCase):
         )
 
     @patch.object(AWSState, '_save_state')
-    @patch('casper.command.TerraformCommand.run_command')
     @patch('logging.Logger.debug')
     def test_build_state_resources_unsupported_resource(
-        self, logger, cmd, _
+        self, logger, _, cmd
     ):
         self._make_dir(os.path.join(self.root_dir, "main"))
         self._make_file(os.path.join(self.root_dir, "main", "real.tf"))
