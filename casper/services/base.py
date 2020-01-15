@@ -1,6 +1,9 @@
 import boto3
 import os
 import importlib
+import logging
+
+logger = logging.getLogger('casper')
 
 
 class BaseService(object):
@@ -17,10 +20,14 @@ class BaseService(object):
         return self._resources_groups
 
     def get_cloud_resources(self, group):
+        handler = getattr(self, f"_get_live_{group}", None)
+        if handler:
+            return handler()
+        else:
+            message = f"Handler for {group} is not currently supported"
+            logging.debug(message)
 
-        # TODO: handle errors of the handler not implemented
-        handler = f"_get_live_{group}"
-        return getattr(self, handler)()
+        return None
 
     def scan_service(self, ghosts):
         raise NotImplementedError

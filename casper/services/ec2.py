@@ -9,7 +9,6 @@ class EC2Service(BaseService):
         self._resources_groups = [
             'aws_instance', 'aws_autoscaling_group', 'aws_security_group',
             'aws_alb', 'aws_elb'
-            # 'aws_ec2_fleet', 'aws_spot_fleet_request'
         ]
 
     def _get_live_aws_alb(self):
@@ -31,12 +30,6 @@ class EC2Service(BaseService):
         ]
 
         return lb_names
-
-    def _get_live_aws_ec2_fleet(self):
-        return []
-
-    def _get_live_aws_spot_fleet_request(self):
-        return []
 
     def _get_live_aws_instance(self):
 
