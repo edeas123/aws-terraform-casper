@@ -19,17 +19,6 @@ class TestState(TestCase):
         with open(path, 'w') as f:
             f.write('test')
 
-    # @classmethod
-    # def _mock_run_command(cls):
-    #     return [
-    #         {'success': True, 'data': load_sample('state.txt')},
-    #         {'success': True, 'data': load_sample('aws_spot_instance_request.txt')},
-    #         {'success': True, 'data': load_sample('aws_instance.txt')},
-    #         ,
-    #         {'success': True, 'data': load_sample('empty.txt')},
-    #         {'success': True, 'data': load_sample('fake_unsupported_resource.txt')}
-    #     ]
-
     def setUp(self) -> None:
         self.aws = AWSState()
         self._make_dir(self.root_dir)
