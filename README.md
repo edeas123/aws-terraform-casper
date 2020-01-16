@@ -103,6 +103,76 @@ S3
 --------------------------------------------------------
 Detailed results written to /Users/username/aws-terraform-casper/result.json
 ```
+An example detailed result is:
+
+```yaml
+{
+    "ec2": {
+        "aws_alb": {
+            "count": 4,
+            "ids": [
+                "core-service-alb",
+                "01af4240-someservice-7d55",
+                "752a14ce-someotherserice-7d55",
+                "01af4240-kubernetesdashboa-2415"
+            ]
+        },
+        "aws_autoscaling_group": {
+            "count": 3,
+            "ids": [
+                "core-infra-asg",
+                "core-dev-asg",
+                "core-prod-asg"
+            ]
+        },
+        "aws_elb": {
+            "count": 1,
+            "ids": [
+                "our_new_elb"
+            ]
+        },
+        "aws_instance": {
+            "count": 2,
+            "ids": [
+                "i-084699b83473e2c69",
+                "i-0101522650aeaa2dd"
+            ]
+        },
+        "aws_security_group": {
+            "count": 1,
+            "ids": [
+                "sg-03ed7e004de2235bd"
+            ]
+        }
+    },
+    "iam": {
+        "aws_iam_role": {
+            "count": 4,
+            "ids": [
+                "AWSServiceRoleForTrustedAdvisor",
+                "AWSServiceRoleForAmazonGuardDuty",
+                "AWSServiceRoleForElastiCache",
+                "casper-role"
+            ]
+        },
+        "aws_iam_user": {
+            "count": 1,
+            "ids": [
+                "user.me"
+            ]
+        }
+    },
+    "s3": {
+        "aws_s3_bucket": {
+            "count": 2,
+            "ids": [
+                "fake_ghost_bucket",
+                "temp_bucket_delete_later"
+            ]
+        }
+    }
+}
+```
 
 ## Contributing
 
