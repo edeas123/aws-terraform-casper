@@ -19,15 +19,16 @@ class TestState(TestCase):
         with open(path, 'w') as f:
             f.write('test')
 
-    @classmethod
-    def _mock_run_command(cls):
-        return [
-            {'success': True, 'data': load_sample('state.txt')},
-            {'success': True, 'data': load_sample('aws_spot_instance_request.txt')},
-            {'success': True, 'data': load_sample('aws_instance.txt')},
-            {'success': True, 'data': load_sample('empty.txt')},
-            {'success': True, 'data': load_sample('fake_unsupported_resource.txt')}
-        ]
+    # @classmethod
+    # def _mock_run_command(cls):
+    #     return [
+    #         {'success': True, 'data': load_sample('state.txt')},
+    #         {'success': True, 'data': load_sample('aws_spot_instance_request.txt')},
+    #         {'success': True, 'data': load_sample('aws_instance.txt')},
+    #         ,
+    #         {'success': True, 'data': load_sample('empty.txt')},
+    #         {'success': True, 'data': load_sample('fake_unsupported_resource.txt')}
+    #     ]
 
     def setUp(self) -> None:
         self.aws = AWSState()
@@ -66,18 +67,23 @@ class TestState(TestCase):
                 'success': True,
                 'data': load_sample('aws_spot_instance_request.txt')
             },
-            {'success': True, 'data': load_sample('aws_instance.txt')}
+            {'success': True, 'data': load_sample('aws_instance.txt')},
+            {
+                'success': True,
+                'data': load_sample('aws_lb.txt')
+            }
         ]
 
         self.aws.build_state_resources(start_dir=self.root_dir)
         self.assertEqual(
-            3,
+            4,
             cmd.call_count,
             "Should be called three times, 1 to list the resource in the "
-            "state, the other to show the two resource in the state"
+            "state, the other to show the three resource in the state"
         )
         self.assertEqual(
             {
+                'aws_alb': ['test-lb'],
                 'aws_instance': ['i-0101522650aeaa2dd', 'i-084699b83473e2c69'],
             },
             self.aws.state_resources
