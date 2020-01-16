@@ -86,6 +86,24 @@ S3
 
 ```
 
+```
+$ python casper.py scan  --output-file result.json
+```
+```
+EC2
+--------------------------------------------------------
+1 ghost aws_instance found
+3 ghost aws_autoscaling_group found
+1 ghost aws_security_group found
+
+S3
+--------------------------------------------------------
+1 ghost aws_s3_bucket found
+
+--------------------------------------------------------
+Detailed results written to /Users/username/aws-terraform-casper/result.json
+```
+
 ## Contributing
 
 Contributions to the development of Casper is very much welcome. You can contribute in the following ways:

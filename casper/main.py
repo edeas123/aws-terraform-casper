@@ -176,3 +176,9 @@ def run(args):
         if output_file:
             with open(output_file, 'w') as fid:
                 fid.write(json.dumps(svc_ghost, indent=4, sort_keys=True))
+
+            print("--------------------------------------------------------")
+            print(
+                f"Detailed results written to "
+                f"{os.path.join(os.getcwd(), output_file)}"
+            )
