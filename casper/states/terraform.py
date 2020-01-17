@@ -1,7 +1,6 @@
 import os
-import logging.config
 import logging
-
+from abc import ABC, abstractmethod
 from casper.command import TerraformCommand
 
 
@@ -12,7 +11,7 @@ IGNORE_PATHS = ('.git', '.terraform')
 IGNORE_RESOURCE_GROUP = ('terraform_remote_state', )
 
 
-class TerraformState(object):
+class TerraformState(ABC):
 
     def __init__(
         self,
@@ -70,11 +69,13 @@ class TerraformState(object):
 
         return self._counter
 
+    @abstractmethod
     def _save_state(self):
-        raise NotImplementedError
+        pass
 
+    @abstractmethod
     def _load_state(self):
-        raise NotImplementedError
+        pass
 
     def _list_state_resources(
         self, state_directory=None

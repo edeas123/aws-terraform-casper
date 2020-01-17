@@ -3,10 +3,12 @@ import os
 import importlib
 import logging
 
+from abc import ABC, abstractmethod
+
 logger = logging.getLogger('casper')
 
 
-class BaseService(object):
+class BaseService(ABC):
 
     def __init__(self, profile=None):
         self._resources_groups = {}
@@ -24,33 +26,38 @@ class BaseService(object):
         if handler:
             return handler()
         else:
+            print("here")
             message = f"Handler for {group} is not currently supported"
             logging.debug(message)
 
         return None
 
+    @abstractmethod
     def scan_service(self, ghosts):
-        raise NotImplementedError
-
-
-path = os.path.join(os.getcwd(), "casper", "services")
-SUPPORTED_SERVICES = sorted(
-    set(
-        i.partition('.')[0]
-        for i in os.listdir(path)
-        if i.endswith(('.py', '.pyc', '.pyo'))
-        and not i.startswith('__init__.py')
-        and not i.startswith('base.py')
-    )
-)
+        pass
 
 
 class UnsupportedServiceException(Exception):
     pass
 
 
+def get_supported_services():
+    path = os.path.join(os.getcwd(), "casper", "services")
+    supported_services = sorted(
+        set(
+            i.partition('.')[0]
+            for i in os.listdir(path)
+            if i.endswith(('.py', '.pyc', '.pyo'))
+            and not i.startswith('__init__.py')
+            and not i.startswith('base.py')
+        )
+    )
+
+    return supported_services
+
+
 def get_service(service_name):
-    if service_name not in SUPPORTED_SERVICES:
+    if service_name not in get_supported_services():
         raise UnsupportedServiceException()
 
     module = importlib.import_module(f"casper.services.{service_name}")

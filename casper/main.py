@@ -1,6 +1,6 @@
 from casper.states.aws import AWSState
 from casper.services.base import (
-    get_service, SUPPORTED_SERVICES
+    get_service, get_supported_services
 )
 
 import logging.config
@@ -9,7 +9,7 @@ import os
 import json
 
 # create logger
-logging.config.fileConfig('logging.conf')
+# logging.config.fileConfig('logging.conf')
 logger = logging.getLogger('casper')
 
 
@@ -106,16 +106,17 @@ def run(args):
         exclude_state_res = set(exclude_state_res.split(","))
 
     service = args['--service']
+    supported_services = get_supported_services()
     if service:
         svc_list = service.split(",")
-        service = [s for s in svc_list if s in SUPPORTED_SERVICES]
+        service = [s for s in svc_list if s in supported_services]
 
         if len(service) < len(svc_list):
             logger.warning("Ignoring one or more unsupported services")
 
         service = set(service)
     else:
-        service = SUPPORTED_SERVICES
+        service = supported_services
 
     exclude_cloud_res = args['--exclude-cloud-res']
     if exclude_cloud_res:
