@@ -14,10 +14,10 @@ class S3Service(BaseService):
 
         s3_client = self.session.client('s3')
         s3_buckets = s3_client.list_buckets()
-        buckets = [
-            bucket['Name']
+        buckets = {
+            bucket['Name']: bucket
             for bucket in s3_buckets['Buckets']
-        ]
+        }
 
         return buckets
 

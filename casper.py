@@ -3,7 +3,7 @@ Casper.
 
 Usage:
     casper.py build [--root-dir=<dir> --bucket-name=<bn> --state-file=<sf> --aws-profile=<profile> --exclude-dirs=<ed> --exclude-state-res=<esr>]
-    casper.py scan  [--root-dir=<dir> --bucket-name=<bn> --state-file=<sf> --aws-profile=<profile> --service=<svc> --exclude-cloud-res=<ecr> --rebuild --output-file=<f>]
+    casper.py scan  [--root-dir=<dir> --bucket-name=<bn> --state-file=<sf> --aws-profile=<profile> --service=<svc> --exclude-cloud-res=<ecr> --rebuild --detailed --output-file=<f>]
     casper.py -h | --help
     casper.py --version
 
@@ -19,6 +19,7 @@ Options:
     --service=<svc>                         Comma separated list of services to scan, default is to scan all supported services.
     --exclude-cloud-res=<ecr>               Comma separated list of resources ids to ignore.
     --rebuild                               Rebuild and save state first before scanning.
+    --detailed                              Retrieve and include details about the resources discovered through scan.
     --output-file=<f>                       Output full result to specified file.
 
 """  # noqa
