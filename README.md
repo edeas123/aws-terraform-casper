@@ -47,7 +47,6 @@ The following environment variable should be set:
 | --service | Comma separated list of services to scan, the default is to scan all supported services |
 | --exclude-cloud-res | Comma separated list of cloud resources ids to ignore |
 | --rebuild | Rebuild and save state first before scanning |
-| --summary-only | Print only the counts result |
 | --output-file | Output detailed result to specified file |
 
 ## Example

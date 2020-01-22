@@ -160,18 +160,18 @@ def run(args):
         svc_ghost = {}
         print("")
         for svc in service:
-            print(svc.upper())
+            print(f"Scanning {svc.upper()} service...")
             svc_ghost[svc] = casper.scan(service_name=svc)
+
+        print("")
+        for svc in service:
+            print(svc.upper())
             print("--------------------------------------------------------")
             for key in svc_ghost[svc].keys():
                 count = svc_ghost[svc][key]['count']
                 if count > 0:
                     print(f"{count} ghost {key} found")
             print("")
-
-        if not summary_only:
-            print("--------------------------------------------------------")
-            print(json.dumps(svc_ghost, indent=4, sort_keys=True))
 
         if output_file:
             with open(output_file, 'w') as fid:
