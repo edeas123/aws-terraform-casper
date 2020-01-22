@@ -47,6 +47,7 @@ The following environment variable should be set:
 | --service | Comma separated list of services to scan, the default is to scan all supported services |
 | --exclude-cloud-res | Comma separated list of cloud resources ids to ignore |
 | --rebuild | Rebuild and save state first before scanning |
+| --detailed | Retrieve and include details about the resources discovered through scan |
 | --output-file | Output detailed result to specified file |
 
 ## Example
@@ -100,9 +101,25 @@ S3
 1 ghost aws_s3_bucket found
 
 --------------------------------------------------------
-Detailed results written to /Users/username/aws-terraform-casper/result.json
+Full result written to /Users/username/aws-terraform-casper/result.json
 ```
-An example detailed result is:
+Syntax for the full result is:
+```yaml
+{
+  "<service>" : {
+    "<resource_group>": {
+      "count": int, # The number of ghost resources found
+      "ids": [
+        "string"  # The ids of the ghost resources found
+      ],
+      "resources": [
+        "dict"  # Details of each resources as returned by AWS. Only shown if `--detailed` flag is set
+      ]
+    } 
+  }
+}
+```
+An example full result (without `--detailed` flag) is shown below.
 
 ```yaml
 {

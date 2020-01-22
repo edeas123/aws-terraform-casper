@@ -50,7 +50,7 @@ class Casper(object):
             exclude_state_res=exclude_state_res
         )
 
-    def scan(self, service_name):
+    def scan(self, service_name, detailed=False):
 
         service = get_service(service_name)
         cloud_service = service(profile=self.profile)
@@ -60,7 +60,7 @@ class Casper(object):
         ghosts = {}
         for resource_group in cloud_service.resources_groups:
             resources = cloud_service.get_cloud_resources(resource_group)
-            diff = set(resources).difference(
+            diff = set(resources.keys()).difference(
                 set(terraformed_resources.get(resource_group, []))
             )
             ghosts[resource_group] = {}
@@ -70,6 +70,12 @@ class Casper(object):
             ghosts[resource_group]['count'] = len(
                 ghosts[resource_group]['ids']
             )
+
+            if detailed:
+                ghosts[resource_group]['resources'] = [
+                    resources[d] for d in diff
+                    if d not in self.exclude_resources
+                ]
 
         cloud_service.scan_service(ghosts)
 
@@ -122,7 +128,7 @@ def run(args):
         exclude_cloud_res = set(exclude_cloud_res.split(","))
 
     rebuild = args['--rebuild']
-    summary_only = args['--summary-only']
+    detailed = args['--detailed']
     output_file = args['--output-file']
 
     if rebuild:
@@ -161,7 +167,7 @@ def run(args):
         print("")
         for svc in service:
             print(f"Scanning {svc.upper()} service...")
-            svc_ghost[svc] = casper.scan(service_name=svc)
+            svc_ghost[svc] = casper.scan(service_name=svc, detailed=detailed)
 
         print("")
         for svc in service:
@@ -175,10 +181,14 @@ def run(args):
 
         if output_file:
             with open(output_file, 'w') as fid:
-                fid.write(json.dumps(svc_ghost, indent=4, sort_keys=True))
+                fid.write(
+                    json.dumps(
+                        svc_ghost, indent=4, sort_keys=True, default=str
+                    )
+                )
 
             print("--------------------------------------------------------")
             print(
-                f"Detailed results written to "
+                f"Full result written to "
                 f"{os.path.join(os.getcwd(), output_file)}"
             )

@@ -14,22 +14,22 @@ class EC2Service(BaseService):
     def _get_live_aws_alb(self):
         alb_client = self.session.client('elbv2')
         alb = alb_client.describe_load_balancers()
-        lb_names = [
-            lb['LoadBalancerName']
+        lbs = {
+            lb['LoadBalancerName']: lb
             for lb in alb['LoadBalancers']
-        ]
+        }
 
-        return lb_names
+        return lbs
 
     def _get_live_aws_elb(self):
         elb_client = self.session.client('elb')
         elb = elb_client.describe_load_balancers()
-        lb_names = [
-            lb['LoadBalancerName']
+        lbs = {
+            lb['LoadBalancerName']: lb
             for lb in elb['LoadBalancerDescriptions']
-        ]
+        }
 
-        return lb_names
+        return lbs
 
     def _get_live_aws_instance(self):
 
@@ -39,10 +39,10 @@ class EC2Service(BaseService):
             reservation['Instances']
             for reservation in ec2['Reservations']
         ]
-        instances_id = [
-            instance['InstanceId'] for instance_group in instances
+        ec2s = {
+            instance['InstanceId']: instance for instance_group in instances
             for instance in instance_group if instance['State']['Code'] == 16
-        ]
+        }
 
         # TODO: find better way of doing thing
         # remove dynamic instances
@@ -57,44 +57,52 @@ class EC2Service(BaseService):
                 NextToken=asgs['NextToken']
             )
             dynamic_instances.extend(
-                instance['InstanceId'] for instance in asgs['AutoScalingInstances']
+                instance['InstanceId']
+                for instance in asgs['AutoScalingInstances']
             )
 
-        return list(set(instances_id).difference(set(dynamic_instances)))
+        static_instances = {
+            k: ec2s[k] for k in
+            set(ec2s.keys()).difference(set(dynamic_instances))
+        }
+
+        return static_instances
 
     def _get_live_aws_autoscaling_group(self):
 
         asg_client = self.session.client('autoscaling')
-        asgs = asg_client.describe_auto_scaling_groups()
-        asgs_names = [
-            a['AutoScalingGroupName'] for a in asgs['AutoScalingGroups']
-        ]
+        asgs_group = asg_client.describe_auto_scaling_groups()
+        asgs = {
+            a['AutoScalingGroupName']: a
+            for a in asgs_group['AutoScalingGroups']
+        }
 
-        while 'NextToken' in asgs.keys():
-            asgs = asg_client.describe_auto_scaling_groups(
-                NextToken=asgs['NextToken']
+        while 'NextToken' in asgs_group.keys():
+            asgs_group = asg_client.describe_auto_scaling_groups(
+                NextToken=asgs_group['NextToken']
             )
-            asgs_names.extend([
-                a['AutoScalingGroupName'] for a in asgs['AutoScalingGroups']
-            ])
+            asgs.update({
+                a['AutoScalingGroupName']: a
+                for a in asgs_group['AutoScalingGroups']
+            })
 
-        return asgs_names
+        return asgs
 
     def _get_live_aws_security_group(self):
         ec2_client = self.session.client('ec2')
 
-        sgs = ec2_client.describe_security_groups()
-        sg_ids = [sg['GroupId'] for sg in sgs['SecurityGroups']]
+        sgs_group = ec2_client.describe_security_groups()
+        sgs = {sg['GroupId']: sg for sg in sgs_group['SecurityGroups']}
 
-        while 'NextToken' in sgs.keys():
-            sgs = ec2_client.describe_security_groups(
-                NextToken=sgs['NextToken']
+        while 'NextToken' in sgs_group.keys():
+            sgs_group = ec2_client.describe_security_groups(
+                NextToken=sgs_group['NextToken']
             )
-            sg_ids.extend(
-                [sg['GroupId'] for sg in sgs['SecurityGroups']]
+            sgs.update(
+                {sg['GroupId']: sg for sg in sgs_group['SecurityGroups']}
             )
 
-        return sg_ids
+        return sgs
 
     def scan_service(self, ghosts):
 
@@ -103,37 +111,57 @@ class EC2Service(BaseService):
             for ndx in range(0, ln, n):
                 yield iterable[ndx:min(ndx + n, ln)]
 
-        if len(ghosts['aws_autoscaling_group']['ids']) > 0:
+        if (
+            'aws_autoscaling_group' in ghosts and
+            len(ghosts['aws_autoscaling_group']['ids']) > 0
+        ):
             # get the instances in defaulting asg and add it to the
             # overall defaulting instances
 
             instances = set(ghosts['aws_instance']['ids'])
             defaulting_asgs = ghosts['aws_autoscaling_group']['ids']
+            asg_instances = {}
+
             asg_client = self.session.client('autoscaling')
             for defaulting_asgs_batch in batch(defaulting_asgs, 50):
                 asgs = asg_client.describe_auto_scaling_groups(
                     AutoScalingGroupNames=defaulting_asgs_batch
                 )
-                instances.update([
-                    instance['InstanceId'] for sublist in (
+                asg_instances.update({
+                    instance['InstanceId']: instance for sublist in (
                         afull['Instances'] for afull in
                         asgs['AutoScalingGroups']
                     ) for instance in sublist
-                ])
+                })
 
                 while 'NextToken' in asgs.keys():
                     asgs = asg_client.describe_auto_scaling_groups(
                         AutoScalingGroupNames=defaulting_asgs_batch,
                         NextToken=asgs['NextToken']
                     )
-                    instances.update([
-                        instance['InstanceId'] for sublist in (
+                    asg_instances.update({
+                        instance['InstanceId']: instance for sublist in (
                             afull['Instances'] for afull in
                             asgs['AutoScalingGroups']
                         ) for instance in sublist
-                    ])
+                    })
+
+            instances.update(asg_instances.keys())
 
             ghosts['aws_instance']['ids'] = list(instances)
             ghosts['aws_instance']['count'] = len(
                 ghosts['aws_instance']['ids']
             )
+
+            if 'resources' in ghosts['aws_instance']:
+                asg_instances.update({
+                    r['InstanceId']: r
+                    for r in ghosts['aws_instance']['resources']
+                })
+
+                resources = [
+                    asg_instances.get(k)
+                    for k in ghosts['aws_instance']['ids']
+                ]
+
+                ghosts['aws_instance']['resources'] = resources
