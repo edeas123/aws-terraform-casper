@@ -1,9 +1,14 @@
 import boto3
-import os
 import importlib
 import logging
 
 logger = logging.getLogger('casper')
+
+SUPPORTED_SERVICES = {
+    'ec2': 'EC2Service',
+    'iam': 'IAMService',
+    's3': 'S3Service'
+}
 
 
 class BaseService(object):
@@ -33,28 +38,17 @@ class BaseService(object):
         raise NotImplementedError
 
 
-path = os.path.join(os.getcwd(), "casper", "services")
-SUPPORTED_SERVICES = sorted(
-    set(
-        i.partition('.')[0]
-        for i in os.listdir(path)
-        if i.endswith(('.py', '.pyc', '.pyo'))
-        and not i.startswith('__init__.py')
-        and not i.startswith('base.py')
-    )
-)
-
-
 class UnsupportedServiceException(Exception):
     pass
 
 
 def get_service(service_name):
-    if service_name not in SUPPORTED_SERVICES:
-        raise UnsupportedServiceException()
 
     module = importlib.import_module(f"casper.services.{service_name}")
-    service_class = f"{service_name.upper()}Service"
+    service_class = SUPPORTED_SERVICES.get(service_name, None)
+    if not service_class:
+        raise UnsupportedServiceException()
+
     service = getattr(module, service_class)
 
     return service
