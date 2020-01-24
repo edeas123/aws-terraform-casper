@@ -2,7 +2,6 @@ import boto3
 import importlib
 import logging
 
-logger = logging.getLogger('casper')
 
 SUPPORTED_SERVICES = {
     'ec2': 'EC2Service',
@@ -16,6 +15,7 @@ class BaseService(object):
     def __init__(self, profile=None):
         self._resources_groups = {}
         self.session = boto3.Session()
+        self.logger = logging.getLogger('casper')
 
         if profile:
             self.session = boto3.Session(profile_name=profile)
@@ -29,8 +29,8 @@ class BaseService(object):
         if handler:
             return handler()
         else:
-            message = f"Handler for {group} is not currently supported"
-            logging.debug(message)
+            message = f"Service Handler for {group} is not currently supported"
+            self.logger.debug(message)
 
         return None
 

@@ -1,12 +1,8 @@
 import os
-import logging.config
 import logging
 
 from casper.command import TerraformCommand
 
-
-# create logger
-logger = logging.getLogger('casper')
 
 IGNORE_PATHS = ('.git', '.terraform')
 IGNORE_RESOURCE_GROUP = ('terraform_remote_state', )
@@ -38,6 +34,7 @@ class TerraformState(object):
             'resource': 0,
             'resource_group': 0,
         }
+        self.logger = logging.getLogger('casper')
 
     def build_state_resources(
         self,
@@ -62,7 +59,7 @@ class TerraformState(object):
             ]
 
             if self._is_terraform_state(filenames):
-                logger.info(dirpath)
+                self.logger.debug(f"In {dirpath}")
                 self._list_state_resources(dirpath)
 
         # save state
@@ -130,7 +127,7 @@ class TerraformState(object):
             else:
                 message = f"'{resource_identifier}' no longer " \
                           f"exist in the state: {directory}"
-                logger.warning(message)
+                self.logger.warning(message)
 
         return resource_id
 
@@ -139,8 +136,8 @@ class TerraformState(object):
         if handler:
             return handler(text)
         else:
-            message = f"Handler for {group} is not currently supported"
-            logging.debug(message)
+            message = f"State Handler for {group} is not currently supported"
+            self.logger.debug(message)
             self._exclude_state_res.add(group)
 
         return None

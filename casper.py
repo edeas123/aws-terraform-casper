@@ -2,8 +2,8 @@
 Casper.
 
 Usage:
-    casper.py build [--root-dir=<dir> --bucket-name=<bn> --state-file=<sf> --aws-profile=<profile> --exclude-dirs=<ed> --exclude-state-res=<esr>]
-    casper.py scan  [--root-dir=<dir> --bucket-name=<bn> --state-file=<sf> --aws-profile=<profile> --service=<svc> --exclude-cloud-res=<ecr> --rebuild --detailed --output-file=<f>]
+    casper.py build [--root-dir=<dir> --bucket-name=<bn> --state-file=<sf> --aws-profile=<profile> --exclude-dirs=<ed> --exclude-state-res=<esr> --loglevel=<lvl>]
+    casper.py scan  [--root-dir=<dir> --bucket-name=<bn> --state-file=<sf> --aws-profile=<profile> --service=<svc> --exclude-cloud-res=<ecr> --rebuild --detailed --output-file=<f>  --loglevel=<lvl>]
     casper.py -h | --help
     casper.py --version
 
@@ -21,13 +21,48 @@ Options:
     --rebuild                               Rebuild and save state first before scanning.
     --detailed                              Retrieve and include details about the resources discovered through scan.
     --output-file=<f>                       Output full result to specified file.
+    --loglevel=<lvl>                        Log level [default: INFO].
 
 """  # noqa
 
 from docopt import docopt
 from casper.main import run
 
+import logging
+import logging.config
+
+
+def _setup_logging(loglevel='INFO'):
+
+    # create logger
+    logger = logging.getLogger('casper')
+    numeric_level = getattr(logging, loglevel.upper(), None)
+
+    if not isinstance(numeric_level, int):
+        raise ValueError('Invalid log level: %s' % loglevel)
+
+    logger.setLevel(numeric_level)
+
+    # create console handler and set level to debug
+    ch = logging.StreamHandler()
+    ch.setLevel(logging.DEBUG)
+
+    # create formatter
+    formatter = logging.Formatter(
+        '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    )
+
+    # add formatter to ch
+    ch.setFormatter(formatter)
+
+    # add ch to logger
+    logger.addHandler(ch)
+
 
 if __name__ == '__main__':
     args = docopt(__doc__)
+
+    loglevel = args['--loglevel']
+    _setup_logging(loglevel=loglevel)
+
     run(args)

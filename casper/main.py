@@ -3,21 +3,16 @@ from casper.services.base import (
     get_service, SUPPORTED_SERVICES
 )
 
-import logging.config
 import logging
 import os
 import json
-
-# create logger
-logging.config.fileConfig('logging.conf')
-logger = logging.getLogger('casper')
 
 
 class Casper(object):
     def __init__(
         self,
-        start_directory: str = None,
         bucket_name: str = "",
+        start_directory: str = None,
         state_file: str = "terraform_state",
         profile: str = None,
         exclude_resources: set = None,
@@ -117,6 +112,7 @@ def run(args):
         service = [s for s in svc_list if s in SUPPORTED_SERVICES]
 
         if len(service) < len(svc_list):
+            logger = logging.getLogger('casper')
             logger.warning("Ignoring one or more unsupported services")
 
         service = set(service)
@@ -135,9 +131,9 @@ def run(args):
         build_command = True
 
     casper = Casper(
+        bucket_name,
         start_directory=root_dir,
         state_file=state_file,
-        bucket_name=bucket_name,
         profile=aws_profile,
         exclude_resources=exclude_cloud_res,
         load_state=not build_command

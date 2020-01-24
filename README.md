@@ -49,6 +49,7 @@ The following environment variable should be set:
 | --rebuild | Rebuild and save state first before scanning |
 | --detailed | Retrieve and include details about the resources discovered through scan |
 | --output-file | Output detailed result to specified file |
+| --loglevel | Log level. Defaults to INFO if unspecified |
 
 ## Example
 
