@@ -3,12 +3,13 @@ from casper.services.base import (
     get_service
 )
 import os
+import logging
 
 
 class Casper(object):
     def __init__(
         self,
-        bucket_name: str = "",
+        bucket_name,
         start_directory: str = None,
         state_file: str = "terraform_state",
         profile: str = None,
@@ -34,8 +35,11 @@ class Casper(object):
             state_file=state_file,
             load_state=load_state
         )
+        self.logger = logging.getLogger('casper')
 
     def build(self, exclude_directories=None, exclude_state_res=None):
+        self.logger.info("Building states...")
+
         return self.tf.build_state_resources(
             start_dir=self.start_dir,
             exclude_directories=exclude_directories,
@@ -44,6 +48,7 @@ class Casper(object):
 
     def scan(self, service_name, detailed=False):
 
+        self.logger.info(f"Scanning {service_name.upper()} service...")
         service = get_service(service_name)
         cloud_service = service(profile=self.profile)
 

@@ -14,16 +14,18 @@ Terraform to provision their AWS infrastructure. Running Casper on an empty terr
 
 ## Installation
 
-Do the following to install Casper:
+To run Casper directly:
 ```
 git clone https://github.com/edeas123/aws-terraform-casper.git
 cd aws-terraform-casper
 pip install -r requirements.txt
+python casper.py <sub_command>
+
 ```
 
 ## Requirements
 
-Casper requires general READ permissions to use terraform in refreshing and listing the states. It also requires permission to READ and WRITE to S3 (particularly the `CASPER_BUCKET` bucket) where it saves and loads the state resource IDs.
+Casper requires an AWS_PROFILE with general READ permissions to use terraform in refreshing and listing the states. By default it uses the local machine's default AWS profile. The AWS_PROFILE should also have permission to READ and WRITE to S3 (particularly the `CASPER_BUCKET` bucket) where it saves and loads the state resource IDs.
 
 ## Environment Variable
 
@@ -52,6 +54,8 @@ The following environment variable should be set:
 | --loglevel | Log level. Defaults to INFO if unspecified |
 
 ## Example
+
+Casper has two subcommands: `BUILD` and `SCAN`.
 
 Casper `BUILD` collects and stores information about the infrastructure captured in terraform. Casper collects the IDs of all the state resources and stores it in `CASPER_BUCKET`.
 
@@ -104,22 +108,7 @@ S3
 --------------------------------------------------------
 Full result written to /Users/username/aws-terraform-casper/result.json
 ```
-Syntax for the full result is:
-```yaml
-{
-  "<service>" : {
-    "<resource_group>": {
-      "count": int, # The number of ghost resources found
-      "ids": [
-        "string"  # The ids of the ghost resources found
-      ],
-      "resources": [
-        "dict"  # Details of each resources as returned by AWS. Only shown if `--detailed` flag is set
-      ]
-    } 
-  }
-}
-```
+
 An example full result (without `--detailed` flag) is shown below.
 
 ```yaml
@@ -188,6 +177,45 @@ An example full result (without `--detailed` flag) is shown below.
             ]
         }
     }
+}
+```
+## Library
+
+Casper can also be used as a library. Install it from pypi:
+```
+pip install aws-terraform-casper
+```
+
+To use Casper from your code:
+
+```
+# import into your code
+from casper import Casper
+
+# create an instance of Casper
+casper = Casper(bucket_name) # requires one positional argument to use as CASPER_BUCKET.
+
+# Casper Build
+state_summary = casper.build()
+
+# Casper Scan
+ghosts_resources = casper.scan(svc) # requires one positional argument for the service to scan
+
+```
+The syntax for the result (`ghost_resources`) from Casper Scan is:
+```yaml
+{
+  "<service>" : {
+    "<resource_group>": {
+      "count": int, # The number of ghost resources found
+      "ids": [
+        "string"  # The ids of the ghost resources found
+      ],
+      "resources": [
+        "dict"  # Details of each resources as returned by AWS. Only shown if `--detailed` flag is set
+      ]
+    } 
+  }
 }
 ```
 

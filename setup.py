@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="aws-terraform-casper",
-    version="0.1.0",
+    version="0.2.0",
     author="Obaro Odiete",
     author_email="mybytesni@gmail.com",
     description="A tool for detecting resources running on your AWS cloud "

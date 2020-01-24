@@ -63,6 +63,8 @@ def _setup_logging(loglevel='INFO'):
 
 
 def run(args):
+    logger = logging.getLogger('casper')
+
     build_command = args['build']
     scan_command = args['scan']
 
@@ -91,18 +93,17 @@ def run(args):
     if exclude_state_res:
         exclude_state_res = set(exclude_state_res.split(","))
 
-    service = args['--service']
-    if service:
-        svc_list = service.split(",")
-        service = [s for s in svc_list if s in SUPPORTED_SERVICES]
+    services = args['--services']
+    if services:
+        svc_list = services.split(",")
+        services = [s for s in svc_list if s in SUPPORTED_SERVICES]
 
-        if len(service) < len(svc_list):
-            logger = logging.getLogger('casper')
+        if len(services) < len(svc_list):
             logger.warning("Ignoring one or more unsupported services")
 
-        service = set(service)
+        services = set(services)
     else:
-        service = SUPPORTED_SERVICES
+        services = SUPPORTED_SERVICES
 
     exclude_cloud_res = args['--exclude-cloud-res']
     if exclude_cloud_res:
@@ -125,7 +126,6 @@ def run(args):
     )
 
     if build_command:
-        print("Building states...")
         counters = casper.build(
             exclude_state_res=exclude_state_res,
             exclude_directories=exclude_dirs
@@ -146,12 +146,15 @@ def run(args):
     if scan_command:
         svc_ghost = {}
         print("")
-        for svc in service:
-            print(f"Scanning {svc.upper()} service...")
+
+        if len(services) == 0:
+            logger.warning("No supported service specified")
+
+        for svc in services:
             svc_ghost[svc] = casper.scan(service_name=svc, detailed=detailed)
 
         print("")
-        for svc in service:
+        for svc in services:
             print(svc.upper())
             print("--------------------------------------------------------")
             for key in svc_ghost[svc].keys():
