@@ -44,7 +44,7 @@ The following environment variable should be set:
 | --bucket-name | Bucket name created to save and retrieve state. If not set, uses the value in CASPER_BUCKET environment variable |
 | --exclude-dirs | Comma separated list of directories to ignore |
 | --exclude-state-res | Comma separated list of terraform state resources to ignore |
-| --service | Comma separated list of services to scan, the default is to scan all supported services |
+| --services | Comma separated list of services to scan, the default is to scan all supported services |
 | --exclude-cloud-res | Comma separated list of cloud resources ids to ignore |
 | --rebuild | Rebuild and save state first before scanning |
 | --detailed | Retrieve and include details about the resources discovered through scan |
