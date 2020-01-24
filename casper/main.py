@@ -1,23 +1,15 @@
 from casper.states.aws import AWSState
 from casper.services.base import (
-    get_service, SUPPORTED_SERVICES
+    get_service
 )
-
-import logging.config
-import logging
 import os
-import json
-
-# create logger
-logging.config.fileConfig('logging.conf')
-logger = logging.getLogger('casper')
 
 
 class Casper(object):
     def __init__(
         self,
-        start_directory: str = None,
         bucket_name: str = "",
+        start_directory: str = None,
         state_file: str = "terraform_state",
         profile: str = None,
         exclude_resources: set = None,
@@ -80,115 +72,3 @@ class Casper(object):
         cloud_service.scan_service(ghosts)
 
         return ghosts
-
-
-def run(args):
-    build_command = args['build']
-    scan_command = args['scan']
-
-    aws_profile = args['--aws-profile']
-
-    bucket_name = args['--bucket-name']
-    if bucket_name is None:
-        casper_bucket = os.environ.get('CASPER_BUCKET', None)
-        if casper_bucket:
-            bucket_name = casper_bucket
-        else:
-            print(
-                "Please pass the bucket_name argument or use the "
-                "CASPER_BUCKET environment variable"
-            )
-            return
-
-    state_file = args['--state-file']
-    root_dir = args['--root-dir']
-
-    exclude_dirs = args['--exclude-dirs']
-    if exclude_dirs:
-        exclude_dirs = set(exclude_dirs.split(","))
-
-    exclude_state_res = args['--exclude-state-res']
-    if exclude_state_res:
-        exclude_state_res = set(exclude_state_res.split(","))
-
-    service = args['--service']
-    if service:
-        svc_list = service.split(",")
-        service = [s for s in svc_list if s in SUPPORTED_SERVICES]
-
-        if len(service) < len(svc_list):
-            logger.warning("Ignoring one or more unsupported services")
-
-        service = set(service)
-    else:
-        service = SUPPORTED_SERVICES
-
-    exclude_cloud_res = args['--exclude-cloud-res']
-    if exclude_cloud_res:
-        exclude_cloud_res = set(exclude_cloud_res.split(","))
-
-    rebuild = args['--rebuild']
-    detailed = args['--detailed']
-    output_file = args['--output-file']
-
-    if rebuild:
-        build_command = True
-
-    casper = Casper(
-        start_directory=root_dir,
-        state_file=state_file,
-        bucket_name=bucket_name,
-        profile=aws_profile,
-        exclude_resources=exclude_cloud_res,
-        load_state=not build_command
-    )
-
-    if build_command:
-        print("Building states...")
-        counters = casper.build(
-            exclude_state_res=exclude_state_res,
-            exclude_directories=exclude_dirs
-        )
-
-        # print state statistics
-        states = counters['state']
-        resource_groups = counters['resource_group']
-        resources = counters['resource']
-
-        print("")
-        print("Terraform")
-        print("--------------------------------------------------------")
-        print(f"{states} state(s) checked")
-        print(f"{resource_groups} supported resource group(s) discovered")
-        print(f"{resources} state resource(s) saved to bucket")
-
-    if scan_command:
-        svc_ghost = {}
-        print("")
-        for svc in service:
-            print(f"Scanning {svc.upper()} service...")
-            svc_ghost[svc] = casper.scan(service_name=svc, detailed=detailed)
-
-        print("")
-        for svc in service:
-            print(svc.upper())
-            print("--------------------------------------------------------")
-            for key in svc_ghost[svc].keys():
-                count = svc_ghost[svc][key]['count']
-                if count > 0:
-                    print(f"{count} ghost {key} found")
-            print("")
-
-        if output_file:
-            with open(output_file, 'w') as fid:
-                fid.write(
-                    json.dumps(
-                        svc_ghost, indent=4, sort_keys=True, default=str
-                    )
-                )
-
-            print("--------------------------------------------------------")
-            print(
-                f"Full result written to "
-                f"{os.path.join(os.getcwd(), output_file)}"
-            )

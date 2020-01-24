@@ -5,8 +5,6 @@ from subprocess import (
 import os
 import logging
 
-# create logger
-logger = logging.getLogger('casper')
 
 TIMEOUT_RETURN_CODE = 2
 DEFAULT_TIMEOUT = 300
@@ -35,6 +33,7 @@ class TerraformCommand(object):
             env['AWS_PROFILE'] = profile
 
         self.env = env
+        self.logger = logging.getLogger('casper')
 
     def run_command(self, terraform_command, directory="."):
         # split and run the terraform command
@@ -44,7 +43,7 @@ class TerraformCommand(object):
         if result.returncode == TIMEOUT_RETURN_CODE:
             message = f"{directory} - Ran out of default time of " \
                       f"{self.timeout}s"
-            logger.error(message)
+            self.logger.error(message)
 
             return {'success': False, 'data': message}
 
@@ -58,7 +57,7 @@ class TerraformCommand(object):
 
         if result.returncode:
             message = f"{directory} - {result.stderr.decode('utf-8')}"
-            logger.error(message)
+            self.logger.error(message)
             return {'success': False, 'data': message}
 
         # process the result into a standard format
