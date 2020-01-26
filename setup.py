@@ -1,11 +1,19 @@
 import setuptools
+from distutils.util import convert_path
+
+ns = {}
+ver_path = convert_path('casper/version.py')
+with open(ver_path) as ver_file:
+    exec(ver_file.read(), ns)
+__version__ = ns['__version__']
+
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
     name="aws-terraform-casper",
-    version="0.3.0",
+    version=__version__,
     author="Obaro Odiete",
     author_email="mybytesni@gmail.com",
     description="A tool for detecting resources running on your AWS cloud "
