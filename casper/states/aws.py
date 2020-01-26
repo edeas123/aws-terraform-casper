@@ -28,20 +28,34 @@ class AWSState(TerraformState):
         super().__init__(profile=profile, bucket=bucket, load_state=load_state)
 
     def _save_state(self):
-        s3_client = self.session.client('s3')
-        with tempfile.NamedTemporaryFile(mode='w+') as fid:
-            fid.write(json.dumps(self.state_resources))
-            fid.flush()
-            s3_client.upload_file(
-                fid.name, self.bucket, self.state_object
-            )
+
+        if self.bucket:
+            # save to s3 bucket
+            s3_client = self.session.client('s3')
+            with tempfile.NamedTemporaryFile(mode='w+') as fid:
+                fid.write(json.dumps(self.state_resources))
+                fid.flush()
+                s3_client.upload_file(
+                    fid.name, self.bucket, self.state_object
+                )
+        else:
+            # save to current directory
+            with open(self.state_object, 'w+') as fid:
+                fid.write(json.dumps(self.state_resources))
+                fid.flush()
 
     def _load_state(self):
-        s3 = self.session.resource('s3')
-        obj = s3.Object(self.bucket, self.state_object)
-        data = obj.get()['Body'].read()
 
-        self.state_resources = json.loads(data)
+        if self.bucket:
+            # load from s3 bucket
+            s3 = self.session.resource('s3')
+            obj = s3.Object(self.bucket, self.state_object)
+            data = obj.get()['Body'].read()
+
+            self.state_resources = json.loads(data)
+        else:
+            # load from current directory
+            pass
 
     @classmethod
     def _get_field(cls, field, resource):

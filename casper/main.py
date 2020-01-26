@@ -11,8 +11,8 @@ Options:
     -h --help                               Show this screen.
     --version                               Show version.
     --root-dir=<dir>                        The root terraform directory [default: . ].
-    --bucket-name=<bn>                      Bucket name created to save and retrieve state.
-    --state-file=<sf>                       Name used to save state file in the bucket [default: terraform_state].
+    --bucket-name=<bn>                      If specified, state is saved to and retrieved from that s3 bucket instead of locally.
+    --state-file=<sf>                       Name used to save state file [default: terraform_state].
     --exclude-dirs=<ed>                     Comma separated list of directories to ignore.
     --exclude-state-res=<res>               Comma separated list of terraform state resources to ignore.
     --aws-profile=<profile>                 AWS profile to use.
@@ -83,12 +83,6 @@ def cli():
         casper_bucket = os.environ.get('CASPER_BUCKET', None)
         if casper_bucket:
             bucket_name = casper_bucket
-        else:
-            print(
-                "Please pass the bucket_name argument or use the "
-                "CASPER_BUCKET environment variable"
-            )
-            return
 
     state_file = args['--state-file']
     root_dir = args['--root-dir']
@@ -125,8 +119,8 @@ def cli():
         build_command = True
 
     casper = Casper(
-        bucket_name,
         start_directory=root_dir,
+        bucket_name=bucket_name,
         state_file=state_file,
         profile=aws_profile,
         exclude_resources=exclude_cloud_res,

@@ -9,8 +9,8 @@ import logging
 class Casper(object):
     def __init__(
         self,
-        bucket_name,
         start_directory: str = None,
+        bucket_name: str = None,
         state_file: str = "terraform_state",
         profile: str = None,
         exclude_resources: set = None,
