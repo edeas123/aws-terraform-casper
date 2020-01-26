@@ -1,1 +1,1 @@
-from casper.main import Casper
+from casper.casper import Casper

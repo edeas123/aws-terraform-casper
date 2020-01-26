@@ -6,7 +6,7 @@ import os
 import shutil
 
 
-@patch('casper.command.TerraformCommand.run_command')
+@patch('casper.terraform.TerraformCommand.run_command')
 class TestState(TestCase):
     root_dir = "temp"
 

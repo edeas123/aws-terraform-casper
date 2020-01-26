@@ -1,13 +1,13 @@
 from unittest import TestCase
 from unittest.mock import Mock, patch
-from casper.command import (
+from casper.terraform import (
     TerraformCommand, DEFAULT_TIMEOUT, TIMEOUT_RETURN_CODE
 )
 
 import os
 
 
-@patch("casper.command.run")
+@patch("casper.terraform.run")
 class TestTerraformCommand(TestCase):
 
     def setUp(self) -> None:

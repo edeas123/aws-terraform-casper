@@ -1,7 +1,7 @@
 import os
 import logging
 
-from casper.command import TerraformCommand
+from casper.terraform import TerraformCommand
 
 
 IGNORE_PATHS = ('.git', '.terraform')
