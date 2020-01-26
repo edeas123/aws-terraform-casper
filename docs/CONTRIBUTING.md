@@ -14,12 +14,12 @@ You can contribute in the following ways:
 
 AWS has several services and new ones are regularly added. Follow these steps to contribute code to add support for a new service.
 
-1. Add a new service module in the casper/service directory. The service module should contain a class (appropriately named e.g for EC2 service, the class name was EC2Service) and inherit from BaseService.
+1. Add a new service module in the casper/service directory. The service module should contain a class (appropriately named e.g for EC2 service, the class name was `EC2Service`) and inherit from `BaseService`.
 
 2. At minimum, the class should implement the scan_service method. In most cases, using `pass` is sufficient. 
 The purpose of the function is to support cases where multiple resources depends on eachother very closely. If you need to update the ghosts found for one resource type using details of ghosts found on another resource type within a service, this is the function to do so. For example, in the case of the EC2 service, ghost aws_instances came from diff between aws_instances 
 (and aws_spot_instances) on terraform and aws_nstance (excluding those which are part of an autoscaling group) on AWS, 
-as well as aws_instances attached to ghost aws_auto_scaling_group. 
+as well as aws instances created by ghost `aws_auto_scaling_group`. 
 
 3. Additional methods can now be written in this format `_get_live_<resource_group>` and should return a dictionary with the resource id as key, and the resource data (as returned by AWS) as value. For each resource group supported, include it in the `_resources_groups` instance variable.
 
