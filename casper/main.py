@@ -10,7 +10,7 @@ Usage:
 Options:
     -h --help                               Show this screen.
     --version                               Show version.
-    --root-dir=<dir>                        The root terraform directory [default: . ].
+    --root-dir=<dir>                        The root terraform directory [default: .].
     --bucket-name=<bn>                      If specified, state is saved to and retrieved from that s3 bucket instead of locally.
     --state-file=<sf>                       Name used to save state file [default: terraform_state].
     --exclude-dirs=<ed>                     Comma separated list of directories to ignore.
