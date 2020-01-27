@@ -1,5 +1,4 @@
 import os
-import logging
 
 from casper.terraform import TerraformCommand
 
@@ -34,7 +33,6 @@ class TerraformState(object):
             'resource': 0,
             'resource_group': 0,
         }
-        self.logger = logging.getLogger('casper')
 
     def build_state_resources(
         self,
