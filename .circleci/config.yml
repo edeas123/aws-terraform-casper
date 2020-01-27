@@ -12,7 +12,9 @@ jobs:
           command: pip install -r requirements.txt
       - run:
           name: Install Test Dependencies
-          command: pip install pytest
+          command: pip install pytest pytest-cov codecov
       - run:
           name: Test
-          command: PYTHONPATH=. pytest
+          command: |
+            PYTHONPATH=. pytest --cov=./
+            codecov
