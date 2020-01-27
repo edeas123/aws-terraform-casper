@@ -147,8 +147,6 @@ def cli():
 
     if scan_command:
         svc_ghost = {}
-        print("")
-
         if len(services) == 0:
             logger.warning("No supported service specified")
 
