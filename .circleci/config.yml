@@ -15,4 +15,6 @@ jobs:
           command: pip install pytest pytest-cov
       - run:
           name: Test
-          command: PYTHONPATH=. pytest --cov=./
+          command: |
+            PYTHONPATH=. pytest --cov=./
+            codecov
