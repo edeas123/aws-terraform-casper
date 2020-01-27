@@ -10,9 +10,9 @@ Usage:
 Options:
     -h --help                               Show this screen.
     --version                               Show version.
-    --root-dir=<dir>                        The root terraform directory [default: .].
-    --bucket-name=<bn>                      Bucket name created to save and retrieve state.
-    --state-file=<sf>                       Name used to save state file in the bucket [default: terraform_state].
+    --root-dir=<dir>                        The root terraform directory [default: . ].
+    --bucket-name=<bn>                      If specified, state is saved to and retrieved from that s3 bucket instead of locally.
+    --state-file=<sf>                       Name used to save state file [default: terraform_state].
     --exclude-dirs=<ed>                     Comma separated list of directories to ignore.
     --exclude-state-res=<res>               Comma separated list of terraform state resources to ignore.
     --aws-profile=<profile>                 AWS profile to use.
@@ -71,19 +71,10 @@ def run(
     _setup_logging(loglevel=loglevel)
     logger = logging.getLogger('casper')
 
-    # supported services
-    services = [s for s in services_list if s in SUPPORTED_SERVICES]
-    if len(services) < len(services_list):
-        logger.warning("Ignoring one or more unsupported services")
-
-    if len(services) == 0:
-        logger.info("Scanning will be done for all supported services")
-        services = SUPPORTED_SERVICES.keys()
-
     # casper object
     casper = Casper(
-        bucket_name,
         start_directory=root_dir,
+        bucket_name=bucket_name,
         state_file=state_file,
         profile=aws_profile,
         exclude_resources=exclude_cloud_res,
@@ -109,12 +100,18 @@ def run(
         print(f"{resources} state resource(s) saved to bucket")
 
     if scan_command:
-        svc_ghost = {}
-        print("")
-
+        # supported services
+        services = [s for s in services_list if s in SUPPORTED_SERVICES]
+        if len(services) < len(services_list):
+            logger.warning("Ignoring one or more unsupported services")
+        
         if len(services) == 0:
             logger.warning("No supported service specified")
-
+        
+        if len(services_list) == 0:
+            services = SUPPORTED_SERVICES.keys()
+        
+        svc_ghost = {}
         for svc in services:
             svc_ghost[svc] = casper.scan(service_name=svc, detailed=detailed)
 

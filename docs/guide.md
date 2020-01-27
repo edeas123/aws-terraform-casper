@@ -145,7 +145,7 @@ Casper can also be used as a library. To use Casper from your code:
 from casper import Casper
 
 # create an instance of Casper
-casper = Casper(bucket_name) # requires one positional argument to use as CASPER_BUCKET.
+casper = Casper()
 
 # Casper Build
 state_summary = casper.build()
