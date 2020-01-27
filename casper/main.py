@@ -10,7 +10,7 @@ Usage:
 Options:
     -h --help                               Show this screen.
     --version                               Show version.
-    --root-dir=<dir>                        The root terraform directory [default: . ].
+    --root-dir=<dir>                        The root terraform directory [default: .].
     --bucket-name=<bn>                      If specified, state is saved to and retrieved from that s3 bucket instead of locally.
     --state-file=<sf>                       Name used to save state file [default: terraform_state].
     --exclude-dirs=<ed>                     Comma separated list of directories to ignore.
@@ -62,62 +62,16 @@ def _setup_logging(loglevel='INFO'):
     logger.addHandler(ch)
 
 
-def cli():
-
-    # get the commandline arguments
-    args = docopt(__doc__)
-
+def run(
+    build_command, scan_command, root_dir, aws_profile, detailed,
+    output_file,exclude_cloud_res, services_list, exclude_state_res,
+    exclude_dirs, state_file, bucket_name,loglevel
+):
     # setup logging
-    loglevel = args['--loglevel']
     _setup_logging(loglevel=loglevel)
     logger = logging.getLogger('casper')
 
-    # parse arguments
-    build_command = args['build']
-    scan_command = args['scan']
-
-    aws_profile = args['--aws-profile']
-
-    bucket_name = args['--bucket-name']
-    if bucket_name is None:
-        casper_bucket = os.environ.get('CASPER_BUCKET', None)
-        if casper_bucket:
-            bucket_name = casper_bucket
-
-    state_file = args['--state-file']
-    root_dir = args['--root-dir']
-
-    exclude_dirs = args['--exclude-dirs']
-    if exclude_dirs:
-        exclude_dirs = set(exclude_dirs.split(","))
-
-    exclude_state_res = args['--exclude-state-res']
-    if exclude_state_res:
-        exclude_state_res = set(exclude_state_res.split(","))
-
-    services = args['--services']
-    if services:
-        svc_list = services.split(",")
-        services = [s for s in svc_list if s in SUPPORTED_SERVICES]
-
-        if len(services) < len(svc_list):
-            logger.warning("Ignoring one or more unsupported services")
-
-        services = set(services)
-    else:
-        services = SUPPORTED_SERVICES
-
-    exclude_cloud_res = args['--exclude-cloud-res']
-    if exclude_cloud_res:
-        exclude_cloud_res = set(exclude_cloud_res.split(","))
-
-    rebuild = args['--rebuild']
-    detailed = args['--detailed']
-    output_file = args['--output-file']
-
-    if rebuild:
-        build_command = True
-
+    # casper object
     casper = Casper(
         start_directory=root_dir,
         bucket_name=bucket_name,
@@ -146,10 +100,18 @@ def cli():
         print(f"{resources} state resource(s) saved to bucket")
 
     if scan_command:
-        svc_ghost = {}
+        # supported services
+        services = [s for s in services_list if s in SUPPORTED_SERVICES]
+        if len(services) < len(services_list):
+            logger.warning("Ignoring one or more unsupported services")
+        
         if len(services) == 0:
             logger.warning("No supported service specified")
-
+        
+        if len(services_list) == 0:
+            services = SUPPORTED_SERVICES.keys()
+        
+        svc_ghost = {}
         for svc in services:
             svc_ghost[svc] = casper.scan(service_name=svc, detailed=detailed)
 
@@ -176,6 +138,62 @@ def cli():
                 f"Full result written to "
                 f"{os.path.join(os.getcwd(), output_file)}"
             )
+
+
+def cli():
+
+    # get the commandline arguments
+    args = docopt(__doc__)
+
+    # parse arguments
+    build_command = args['build']
+    scan_command = args['scan']
+
+    aws_profile = args['--aws-profile']
+
+    bucket_name = args['--bucket-name']
+    if bucket_name is None:
+        casper_bucket = os.environ.get('CASPER_BUCKET', None)
+        if casper_bucket:
+            bucket_name = casper_bucket
+
+    state_file = args['--state-file']
+    root_dir = args['--root-dir']
+
+    exclude_dirs = args['--exclude-dirs']
+    if exclude_dirs:
+        exclude_dirs = exclude_dirs.split(",")
+
+    exclude_state_res = args['--exclude-state-res']
+    if exclude_state_res:
+        exclude_state_res = exclude_state_res.split(",")
+
+    services = args['--services']
+    services_list = []
+    if services:
+        services_list = services.split(",")
+
+    exclude_cloud_res = args['--exclude-cloud-res']
+    if exclude_cloud_res:
+        exclude_cloud_res = exclude_cloud_res.split(",")
+
+    rebuild = args['--rebuild']
+    detailed = args['--detailed']
+    output_file = args['--output-file']
+
+    if rebuild:
+        build_command = True
+
+    loglevel = args['--loglevel']
+
+    run(
+        build_command=build_command, scan_command=scan_command,
+        root_dir=root_dir, aws_profile=aws_profile, detailed=detailed,
+        output_file=output_file, exclude_cloud_res=exclude_cloud_res,
+        services_list=services_list, exclude_state_res=exclude_state_res,
+        exclude_dirs=exclude_dirs, state_file=state_file,
+        bucket_name=bucket_name, loglevel=loglevel
+    )
 
 
 if __name__ == '__main__':
