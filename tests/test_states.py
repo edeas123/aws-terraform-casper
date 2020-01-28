@@ -6,7 +6,7 @@ import os
 import shutil
 
 
-@patch('casper.command.TerraformCommand.run_command')
+@patch('casper.terraform.TerraformCommand.run_command')
 class TestState(TestCase):
     root_dir = "temp"
 
@@ -145,7 +145,7 @@ class TestState(TestCase):
             "state, the other to show the only resource in the state"
         )
         logger.assert_called_with(
-            "Handler for fake_unsupported_resource is not currently supported"
+            "State Handler for fake_unsupported_resource is not currently supported"
         )
 
     def tearDown(self):

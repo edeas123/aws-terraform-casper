@@ -1,29 +1,93 @@
 from unittest import TestCase
-from unittest.mock import Mock, patch
-from casper.main import Casper
+from unittest.mock import patch
+from casper import main
+from docopt import docopt
+
+doc = main.__doc__
 
 
-@patch('casper.command.TerraformCommand.run_command')
-class TestMainInterface(TestCase):
+@patch('casper.main.run')
+@patch('casper.main.docopt')
+class TestMainCli(TestCase):
+    def test_build_no_other_args(self, mock_docopt, mock_run):
 
-    def setUp(self) -> None:
-        pass
+        test_args = ["build"]
+        mock_docopt.return_value = docopt(doc, test_args)
 
-    def test_run(self, fake_run):
+        main.cli()
+        mock_run.assert_called_with(
+            aws_profile=None, bucket_name=None, build_command=True,
+            detailed=False, exclude_cloud_res=None,
+            exclude_dirs=None, exclude_state_res=None, loglevel='INFO',
+            output_file=None, root_dir='.',
+            scan_command=False, services_list=[],
+            state_file='terraform_state'
+        )
 
-        pass
+    @patch('casper.main.os')
+    def test_build_with_bucket_name_env(self, mock_os, mock_docopt, mock_run):
 
-    def test_build(self, fake_run):
-        pass
+        def mock_get(key, default):
+            if key == 'CASPER_BUCKET':
+                return 'test_bucket'
+            return default
 
-    @patch('casper.main.get_service')
-    def test_scan(self, fake_get_service, fake_run):
-        casper = Casper()
-        # fake_get_service.return_value = Mock(
-        #     resources_groups=[]
-        # )
-        casper.scan('ec2')
-        print()
-        print(fake_get_service.call_count)
-        print(fake_run.call_count)
-        pass
+        test_args = ["build"]
+        mock_os.environ.get.side_effect = mock_get
+        mock_docopt.return_value = docopt(doc, test_args)
+
+        main.cli()
+        mock_run.assert_called_with(
+            aws_profile=None, bucket_name='test_bucket', build_command=True,
+            detailed=False, exclude_cloud_res=None,
+            exclude_dirs=None, exclude_state_res=None, loglevel='INFO',
+            output_file=None, root_dir='.',
+            scan_command=False, services_list=[],
+            state_file='terraform_state'
+        )
+
+    def test_scan_no_other_args(self, mock_docopt, mock_run):
+
+        test_args = ["scan"]
+        mock_docopt.return_value = docopt(doc, test_args)
+
+        main.cli()
+        mock_run.assert_called_with(
+            aws_profile=None, bucket_name=None, build_command=False,
+            detailed=False, exclude_cloud_res=None,
+            exclude_dirs=None, exclude_state_res=None, loglevel='INFO',
+            output_file=None, root_dir='.',
+            scan_command=True, services_list=[],
+            state_file='terraform_state'
+        )
+
+    def test_scan_with_rebuild(self, mock_docopt, mock_run):
+
+        test_args = ["scan", "--rebuild"]
+        mock_docopt.return_value = docopt(doc, test_args)
+
+        main.cli()
+        mock_run.assert_called_with(
+            aws_profile=None, bucket_name=None, build_command=True,
+            detailed=False, exclude_cloud_res=None,
+            exclude_dirs=None, exclude_state_res=None, loglevel='INFO',
+            output_file=None, root_dir='.',
+            scan_command=True, services_list=[],
+            state_file='terraform_state'
+        )
+
+    def test_scan_with_services(self, mock_docopt, mock_run):
+
+        test_args = ["scan", "--services=abc,def"]
+        mock_docopt.return_value = docopt(doc, test_args)
+
+        main.cli()
+        mock_run.assert_called_with(
+            aws_profile=None, bucket_name=None, build_command=False,
+            detailed=False, exclude_cloud_res=None,
+            exclude_dirs=None, exclude_state_res=None, loglevel='INFO',
+            output_file=None, root_dir='.',
+            scan_command=True, services_list=['abc', 'def'],
+            state_file='terraform_state'
+        )
+ 

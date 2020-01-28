@@ -1,11 +1,14 @@
 import boto3
-import os
 import importlib
 import logging
 
 from abc import ABC, abstractmethod
 
-logger = logging.getLogger('casper')
+SUPPORTED_SERVICES = {
+    'ec2': 'EC2Service',
+    'iam': 'IAMService',
+    's3': 'S3Service'
+}
 
 
 class BaseService(ABC):
@@ -13,6 +16,7 @@ class BaseService(ABC):
     def __init__(self, profile=None):
         self._resources_groups = {}
         self.session = boto3.Session()
+        self.logger = logging.getLogger('casper')
 
         if profile:
             self.session = boto3.Session(profile_name=profile)
@@ -26,9 +30,8 @@ class BaseService(ABC):
         if handler:
             return handler()
         else:
-            print("here")
-            message = f"Handler for {group} is not currently supported"
-            logging.debug(message)
+            message = f"Service Handler for {group} is not currently supported"
+            self.logger.debug(message)
 
         return None
 
@@ -41,27 +44,13 @@ class UnsupportedServiceException(Exception):
     pass
 
 
-def get_supported_services():
-    path = os.path.join(os.getcwd(), "casper", "services")
-    supported_services = sorted(
-        set(
-            i.partition('.')[0]
-            for i in os.listdir(path)
-            if i.endswith(('.py', '.pyc', '.pyo'))
-            and not i.startswith('__init__.py')
-            and not i.startswith('base.py')
-        )
-    )
-
-    return supported_services
-
-
 def get_service(service_name):
-    if service_name not in get_supported_services():
-        raise UnsupportedServiceException()
 
     module = importlib.import_module(f"casper.services.{service_name}")
-    service_class = f"{service_name.upper()}Service"
+    service_class = SUPPORTED_SERVICES.get(service_name, None)
+    if not service_class:
+        raise UnsupportedServiceException()
+
     service = getattr(module, service_class)
 
     return service

@@ -15,10 +15,10 @@ class IAMService(BaseService):
 
         iam_client = self.session.client('iam')
         iam_users = iam_client.list_users()
-        users = [
-            user['UserName']
+        users = {
+            user['UserName']: user
             for user in iam_users['Users']
-        ]
+        }
 
         return users
 
@@ -26,10 +26,10 @@ class IAMService(BaseService):
 
         iam_client = self.session.client('iam')
         iam_roles = iam_client.list_roles()
-        roles = [
-            user['RoleName']
-            for user in iam_roles['Roles']
-        ]
+        roles = {
+            role['RoleName']: role
+            for role in iam_roles['Roles']
+        }
 
         return roles
 

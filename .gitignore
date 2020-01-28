@@ -6,3 +6,4 @@ dist
 build
 Casper.egg-info
 .todo
+aws_terraform_casper.egg-info/
