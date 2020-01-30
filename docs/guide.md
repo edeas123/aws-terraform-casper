@@ -1,23 +1,21 @@
 ## Requirements
 
-Casper requires an AWS_PROFILE with general READ permissions to use terraform in refreshing and listing the states. By default it uses the local machine's default AWS profile. The AWS_PROFILE should also have permission to READ and WRITE to S3 (particularly the `CASPER_BUCKET` bucket) where it saves and loads the state resource IDs.
+Casper requires an AWS_PROFILE with READ permissions to use terraform in refreshing and listing the states. 
+By default it uses the local machine's default AWS profile. 
 
-## Environment Variable
-
-The following environment variable should be set:
-
-| Variable        | Description |
-| ------------- |:-------------|
-| AWS_PROFILE | [Optional] If the `--aws-profile` argument is not passed, the call to terraform uses the aws profile specified in this variable, otherwise your default aws profile is used|
-| CASPER_BUCKET | The bucket to save state resource ids. If this variable is not specified, Casper would prompt for a bucket name. It could also be passed using the `--bucket-name` argument |
+If you specify the `CASPER_BUCKET` environment variable or use the `--bucket-name` option, 
+then the AWS_PROFILE must also have READ and WRITE permissions to that bucket else Casper would
+revert to saving the casper state in the current directory.
 
 
 ## Example
 
+Casper currently has two subcommands: BUILD and SCAN.
+
 Casper `BUILD` collects and stores information about the infrastructure captured in terraform. Casper collects the IDs of all the state resources and stores it in `CASPER_BUCKET`.
 
-```
-$ python casper.py build --root-dir=/Users/username/terraform_dev_dir --aws-profile=casper_profile
+```shell script
+casper build --root-dir=/Users/username/terraform_dev_dir --aws-profile=casper_profile
 ```
 
 ```
@@ -31,8 +29,8 @@ Terraform
 
 Casper `SCAN` compares the resources on terraform with that running in the cloud, and returns the summary and details of all the resources found in the cloud but not captured in terraform. SCAN uses the terraform state information that was saved to `CASPER_BUCKET` or it rebuilds that information (if the `--rebuild` argument is set)
 
-```
-$ python casper.py scan
+```shell script
+casper scan
 ```
 
 ```
@@ -48,8 +46,8 @@ S3
 
 ```
 
-```
-$ python casper.py scan  --output-file result.json
+```shell script
+casper scan  --output-file result.json
 ```
 ```
 EC2
@@ -140,7 +138,7 @@ An example full result (without `--detailed` flag) is shown below.
 
 Casper can also be used as a library. To use Casper from your code:
 
-```
+```python
 # import into your code
 from casper import Casper
 
@@ -151,7 +149,8 @@ casper = Casper()
 state_summary = casper.build()
 
 # Casper Scan
-ghosts_resources = casper.scan(svc) # requires one positional argument for the service to scan
+svc = "ec2" # requires one positional argument for the service to scan e.g. ec2
+ghosts_resources = casper.scan(svc) 
 
 ```
 The syntax for the result (`ghost_resources`) from Casper Scan is:
