@@ -1,4 +1,4 @@
-from casper.states.aws import AWSState
+from casper.state import CasperState
 from casper.services.base import (
     get_service
 )
@@ -13,7 +13,7 @@ class Casper(object):
         bucket_name: str = None,
         state_file: str = "terraform_state",
         profile: str = None,
-        exclude_resources: set = None,
+        exclude_resources: list = None,
         load_state: bool = False
     ):
 
@@ -21,7 +21,7 @@ class Casper(object):
             start_directory = os.getcwd()
 
         if exclude_resources is None:
-            exclude_resources = set()
+            exclude_resources = []
 
         self.exclude_resources = exclude_resources
         self.start_dir = start_directory
@@ -29,7 +29,7 @@ class Casper(object):
 
         self.bucket = bucket_name
 
-        self.tf = AWSState(
+        self.state = CasperState(
             profile=self.profile,
             bucket=self.bucket,
             state_file=state_file,
@@ -40,7 +40,7 @@ class Casper(object):
     def build(self, exclude_directories=None, exclude_state_res=None):
         self.logger.info("Building states...")
 
-        return self.tf.build_state_resources(
+        return self.state.build_state_resources(
             start_dir=self.start_dir,
             exclude_directories=exclude_directories,
             exclude_state_res=exclude_state_res
@@ -52,7 +52,7 @@ class Casper(object):
         service = get_service(service_name)
         cloud_service = service(profile=self.profile)
 
-        terraformed_resources = self.tf.state_resources
+        terraformed_resources = self.state.state_resources
 
         ghosts = {}
         for resource_group in cloud_service.resources_groups:

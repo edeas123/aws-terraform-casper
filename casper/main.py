@@ -98,19 +98,19 @@ def run(
         print(f"{states} state(s) checked")
         print(f"{resource_groups} supported resource group(s) discovered")
         print(f"{resources} state resource(s) saved to bucket")
+        print("")
 
     if scan_command:
         # supported services
-        services = [s for s in services_list if s in SUPPORTED_SERVICES]
-        if len(services) < len(services_list):
-            logger.warning("Ignoring one or more unsupported services")
-        
-        if len(services) == 0:
-            logger.warning("No supported service specified")
-        
-        if len(services_list) == 0:
+        if services_list:
+            services = [s for s in services_list if s in SUPPORTED_SERVICES]
+            if len(services) == 0:
+                logger.warning("No supported service specified")
+            elif len(services) < len(services_list):
+                logger.warning("Ignoring one or more unsupported services")
+        else:
             services = SUPPORTED_SERVICES.keys()
-        
+
         svc_ghost = {}
         for svc in services:
             svc_ghost[svc] = casper.scan(service_name=svc, detailed=detailed)
@@ -169,9 +169,8 @@ def cli():
         exclude_state_res = exclude_state_res.split(",")
 
     services = args['--services']
-    services_list = []
     if services:
-        services_list = services.split(",")
+        services = services.split(",")
 
     exclude_cloud_res = args['--exclude-cloud-res']
     if exclude_cloud_res:
@@ -190,7 +189,7 @@ def cli():
         build_command=build_command, scan_command=scan_command,
         root_dir=root_dir, aws_profile=aws_profile, detailed=detailed,
         output_file=output_file, exclude_cloud_res=exclude_cloud_res,
-        services_list=services_list, exclude_state_res=exclude_state_res,
+        services_list=services, exclude_state_res=exclude_state_res,
         exclude_dirs=exclude_dirs, state_file=state_file,
         bucket_name=bucket_name, loglevel=loglevel
     )

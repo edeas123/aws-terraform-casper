@@ -1,5 +1,5 @@
 from unittest import TestCase
-from casper.states.aws import AWSState
+from casper.state import CasperState
 
 from unittest.mock import patch
 import os
@@ -20,10 +20,10 @@ class TestState(TestCase):
             f.write('test')
 
     def setUp(self) -> None:
-        self.aws = AWSState()
+        self.state = CasperState()
         self._make_dir(self.root_dir)
 
-    @patch.object(AWSState, '_save_state')
+    @patch.object(CasperState, '_save_state')
     def test_build_state_resources_state_management(self, _, cmd):
         self._make_dir(os.path.join(self.root_dir, "main"))
         self._make_file(os.path.join(self.root_dir, "main", "real.tf"))
@@ -37,7 +37,7 @@ class TestState(TestCase):
         self._make_dir(os.path.join(self.root_dir, ".git"))
         self._make_file(os.path.join(self.root_dir, ".git", "git.tf"))
 
-        self.aws.build_state_resources(start_dir=self.root_dir)
+        self.state.build_state_resources(start_dir=self.root_dir)
         self.assertEqual(
             1,
             cmd.call_count,
@@ -45,7 +45,7 @@ class TestState(TestCase):
             "unexcluded directory with a .tf file"
         )
 
-    @patch.object(AWSState, '_save_state')
+    @patch.object(CasperState, '_save_state')
     def test_build_state_resources(self, _, cmd):
         self._make_dir(os.path.join(self.root_dir, "main"))
         self._make_file(os.path.join(self.root_dir, "main", "real.tf"))
@@ -63,7 +63,7 @@ class TestState(TestCase):
             }
         ]
 
-        self.aws.build_state_resources(start_dir=self.root_dir)
+        self.state.build_state_resources(start_dir=self.root_dir)
         self.assertEqual(
             4,
             cmd.call_count,
@@ -75,25 +75,25 @@ class TestState(TestCase):
                 'aws_alb': ['test-lb'],
                 'aws_instance': ['i-0101522650aeaa2dd', 'i-084699b83473e2c69'],
             },
-            self.aws.state_resources
+            self.state.state_resources
         )
 
-    @patch.object(AWSState, '_save_state')
+    @patch.object(CasperState, '_save_state')
     def test_build_state_resources_save_state(self, mock_save, _):
 
         self._make_dir(os.path.join(self.root_dir, "main"))
         self._make_file(os.path.join(self.root_dir, "main", "real.tf"))
 
-        self.aws.build_state_resources(start_dir=self.root_dir)
+        self.state.build_state_resources(start_dir=self.root_dir)
         mock_save.assert_called_once()
 
-    @patch.object(AWSState, '_load_state')
+    @patch.object(CasperState, '_load_state')
     def test_build_state_resources_load_state(self, mock_load, _):
 
-        _ = AWSState(load_state=True)
+        _ = CasperState(load_state=True)
         mock_load.assert_called_once()
 
-    @patch.object(AWSState, '_save_state')
+    @patch.object(CasperState, '_save_state')
     @patch('logging.Logger.warning')
     def test_build_state_resources_removed_resource(self, logger, _, cmd):
         self._make_dir(os.path.join(self.root_dir, "main"))
@@ -107,7 +107,7 @@ class TestState(TestCase):
             {'success': True, 'data': load_sample('empty.txt')}
         ]
 
-        self.aws.build_state_resources(start_dir=self.root_dir)
+        self.state.build_state_resources(start_dir=self.root_dir)
         self.assertEqual(
             2,
             cmd.call_count,
@@ -118,7 +118,7 @@ class TestState(TestCase):
             "'aws_instance.empty' no longer exist in the state: temp/main"
         )
 
-    @patch.object(AWSState, '_save_state')
+    @patch.object(CasperState, '_save_state')
     @patch('logging.Logger.debug')
     def test_build_state_resources_unsupported_resource(
         self, logger, _, cmd
@@ -137,7 +137,7 @@ class TestState(TestCase):
             }
         ]
 
-        self.aws.build_state_resources(start_dir=self.root_dir)
+        self.state.build_state_resources(start_dir=self.root_dir)
         self.assertEqual(
             2,
             cmd.call_count,
