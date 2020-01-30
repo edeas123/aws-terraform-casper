@@ -19,6 +19,14 @@ class EC2Service(BaseService):
             for lb in alb['LoadBalancers']
         }
 
+        while 'NextMarker' in alb.keys():
+            alb = alb_client.describe_load_balancers(
+                Marker=alb['NextMarker']
+            )
+            lbs.update(
+                {lb['LoadBalancerName']: lb for lb in alb['LoadBalancers']}
+            )
+
         return lbs
 
     def _get_live_aws_elb(self):
@@ -28,6 +36,15 @@ class EC2Service(BaseService):
             lb['LoadBalancerName']: lb
             for lb in elb['LoadBalancerDescriptions']
         }
+
+        while 'NextMarker' in elb.keys():
+            elb = elb_client.describe_load_balancers(
+                Marker=elb['NextMarker']
+            )
+            lbs.update({
+                lb['LoadBalancerName']: lb
+                for lb in elb['LoadBalancerDescriptions']
+            })
 
         return lbs
 
