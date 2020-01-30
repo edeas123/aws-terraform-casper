@@ -4,19 +4,14 @@ import logging
 
 from abc import ABC, abstractmethod
 
-SUPPORTED_SERVICES = {
-    'ec2': 'EC2Service',
-    'iam': 'IAMService',
-    's3': 'S3Service'
-}
+SUPPORTED_SERVICES = {"ec2": "EC2Service", "iam": "IAMService", "s3": "S3Service"}
 
 
 class BaseService(ABC):
-
     def __init__(self, profile=None):
         self._resources_groups = {}
         self.session = boto3.Session()
-        self.logger = logging.getLogger('casper')
+        self.logger = logging.getLogger("casper")
 
         if profile:
             self.session = boto3.Session(profile_name=profile)

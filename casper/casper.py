@@ -1,7 +1,5 @@
 from casper.state import CasperState
-from casper.services.base import (
-    get_service
-)
+from casper.services.base import get_service
 import os
 import logging
 
@@ -14,7 +12,7 @@ class Casper(object):
         state_file: str = "terraform_state",
         profile: str = None,
         exclude_resources: list = None,
-        load_state: bool = False
+        load_state: bool = False,
     ):
 
         if start_directory is None or start_directory == ".":
@@ -33,9 +31,9 @@ class Casper(object):
             profile=self.profile,
             bucket=self.bucket,
             state_file=state_file,
-            load_state=load_state
+            load_state=load_state,
         )
-        self.logger = logging.getLogger('casper')
+        self.logger = logging.getLogger("casper")
 
     def build(self, exclude_directories=None, exclude_state_res=None):
         self.logger.info("Building states...")
@@ -43,7 +41,7 @@ class Casper(object):
         return self.state.build_state_resources(
             start_dir=self.start_dir,
             exclude_directories=exclude_directories,
-            exclude_state_res=exclude_state_res
+            exclude_state_res=exclude_state_res,
         )
 
     def scan(self, service_name, detailed=False):
@@ -61,17 +59,14 @@ class Casper(object):
                 set(terraformed_resources.get(resource_group, []))
             )
             ghosts[resource_group] = {}
-            ghosts[resource_group]['ids'] = [
+            ghosts[resource_group]["ids"] = [
                 d for d in diff if d not in self.exclude_resources
             ]
-            ghosts[resource_group]['count'] = len(
-                ghosts[resource_group]['ids']
-            )
+            ghosts[resource_group]["count"] = len(ghosts[resource_group]["ids"])
 
             if detailed:
-                ghosts[resource_group]['resources'] = [
-                    resources[d] for d in diff
-                    if d not in self.exclude_resources
+                ghosts[resource_group]["resources"] = [
+                    resources[d] for d in diff if d not in self.exclude_resources
                 ]
 
         cloud_service.scan_service(ghosts)

@@ -35,14 +35,14 @@ from casper.services.base import SUPPORTED_SERVICES
 from casper import Casper
 
 
-def _setup_logging(loglevel='INFO'):
+def _setup_logging(loglevel="INFO"):
 
     # create logger
-    logger = logging.getLogger('casper')
+    logger = logging.getLogger("casper")
     numeric_level = getattr(logging, loglevel.upper(), None)
 
     if not isinstance(numeric_level, int):
-        raise ValueError('Invalid log level: %s' % loglevel)
+        raise ValueError("Invalid log level: %s" % loglevel)
 
     logger.setLevel(numeric_level)
 
@@ -52,7 +52,7 @@ def _setup_logging(loglevel='INFO'):
 
     # create formatter
     formatter = logging.Formatter(
-        '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+        "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
     )
 
     # add formatter to ch
@@ -63,13 +63,23 @@ def _setup_logging(loglevel='INFO'):
 
 
 def run(
-    build_command, scan_command, root_dir, aws_profile, detailed,
-    output_file,exclude_cloud_res, services_list, exclude_state_res,
-    exclude_dirs, state_file, bucket_name,loglevel
+    build_command,
+    scan_command,
+    root_dir,
+    aws_profile,
+    detailed,
+    output_file,
+    exclude_cloud_res,
+    services_list,
+    exclude_state_res,
+    exclude_dirs,
+    state_file,
+    bucket_name,
+    loglevel,
 ):
     # setup logging
     _setup_logging(loglevel=loglevel)
-    logger = logging.getLogger('casper')
+    logger = logging.getLogger("casper")
 
     # casper object
     casper = Casper(
@@ -78,19 +88,18 @@ def run(
         state_file=state_file,
         profile=aws_profile,
         exclude_resources=exclude_cloud_res,
-        load_state=not build_command
+        load_state=not build_command,
     )
 
     if build_command:
         counters = casper.build(
-            exclude_state_res=exclude_state_res,
-            exclude_directories=exclude_dirs
+            exclude_state_res=exclude_state_res, exclude_directories=exclude_dirs
         )
 
         # print state statistics
-        states = counters['state']
-        resource_groups = counters['resource_group']
-        resources = counters['resource']
+        states = counters["state"]
+        resource_groups = counters["resource_group"]
+        resources = counters["resource"]
 
         print("")
         print("Terraform")
@@ -120,23 +129,18 @@ def run(
             print(svc.upper())
             print("--------------------------------------------------------")
             for key in svc_ghost[svc].keys():
-                count = svc_ghost[svc][key]['count']
+                count = svc_ghost[svc][key]["count"]
                 if count > 0:
                     print(f"{count} ghost {key} found")
             print("")
 
         if output_file:
-            with open(output_file, 'w') as fid:
-                fid.write(
-                    json.dumps(
-                        svc_ghost, indent=4, sort_keys=True, default=str
-                    )
-                )
+            with open(output_file, "w") as fid:
+                fid.write(json.dumps(svc_ghost, indent=4, sort_keys=True, default=str))
 
             print("--------------------------------------------------------")
             print(
-                f"Full result written to "
-                f"{os.path.join(os.getcwd(), output_file)}"
+                f"Full result written to " f"{os.path.join(os.getcwd(), output_file)}"
             )
 
 
@@ -146,54 +150,61 @@ def cli():
     args = docopt(__doc__)
 
     # parse arguments
-    build_command = args['build']
-    scan_command = args['scan']
+    build_command = args["build"]
+    scan_command = args["scan"]
 
-    aws_profile = args['--aws-profile']
+    aws_profile = args["--aws-profile"]
 
-    bucket_name = args['--bucket-name']
+    bucket_name = args["--bucket-name"]
     if bucket_name is None:
-        casper_bucket = os.environ.get('CASPER_BUCKET', None)
+        casper_bucket = os.environ.get("CASPER_BUCKET", None)
         if casper_bucket:
             bucket_name = casper_bucket
 
-    state_file = args['--state-file']
-    root_dir = args['--root-dir']
+    state_file = args["--state-file"]
+    root_dir = args["--root-dir"]
 
-    exclude_dirs = args['--exclude-dirs']
+    exclude_dirs = args["--exclude-dirs"]
     if exclude_dirs:
         exclude_dirs = exclude_dirs.split(",")
 
-    exclude_state_res = args['--exclude-state-res']
+    exclude_state_res = args["--exclude-state-res"]
     if exclude_state_res:
         exclude_state_res = exclude_state_res.split(",")
 
-    services = args['--services']
+    services = args["--services"]
     if services:
         services = services.split(",")
 
-    exclude_cloud_res = args['--exclude-cloud-res']
+    exclude_cloud_res = args["--exclude-cloud-res"]
     if exclude_cloud_res:
         exclude_cloud_res = exclude_cloud_res.split(",")
 
-    rebuild = args['--rebuild']
-    detailed = args['--detailed']
-    output_file = args['--output-file']
+    rebuild = args["--rebuild"]
+    detailed = args["--detailed"]
+    output_file = args["--output-file"]
 
     if rebuild:
         build_command = True
 
-    loglevel = args['--loglevel']
+    loglevel = args["--loglevel"]
 
     run(
-        build_command=build_command, scan_command=scan_command,
-        root_dir=root_dir, aws_profile=aws_profile, detailed=detailed,
-        output_file=output_file, exclude_cloud_res=exclude_cloud_res,
-        services_list=services, exclude_state_res=exclude_state_res,
-        exclude_dirs=exclude_dirs, state_file=state_file,
-        bucket_name=bucket_name, loglevel=loglevel
+        build_command=build_command,
+        scan_command=scan_command,
+        root_dir=root_dir,
+        aws_profile=aws_profile,
+        detailed=detailed,
+        output_file=output_file,
+        exclude_cloud_res=exclude_cloud_res,
+        services_list=services,
+        exclude_state_res=exclude_state_res,
+        exclude_dirs=exclude_dirs,
+        state_file=state_file,
+        bucket_name=bucket_name,
+        loglevel=loglevel,
     )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     cli()

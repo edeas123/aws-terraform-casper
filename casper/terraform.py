@@ -1,6 +1,4 @@
-from subprocess import (
-    run, TimeoutExpired, CompletedProcess
-)
+from subprocess import run, TimeoutExpired, CompletedProcess
 
 import os
 import logging
@@ -30,10 +28,10 @@ class TerraformCommand(object):
 
         # add environment variables
         if profile:
-            env['AWS_PROFILE'] = profile
+            env["AWS_PROFILE"] = profile
 
         self.env = env
-        self.logger = logging.getLogger('casper')
+        self.logger = logging.getLogger("casper")
 
     def run_command(self, terraform_command, directory="."):
         # split and run the terraform command
@@ -41,11 +39,10 @@ class TerraformCommand(object):
         result = self._run(cmd, directory)
 
         if result.returncode == TIMEOUT_RETURN_CODE:
-            message = f"{directory} - Ran out of default time of " \
-                      f"{self.timeout}s"
+            message = f"{directory} - Ran out of default time of " f"{self.timeout}s"
             self.logger.error(message)
 
-            return {'success': False, 'data': message}
+            return {"success": False, "data": message}
 
         if result.returncode:
             # run terraform init and try again
@@ -58,19 +55,16 @@ class TerraformCommand(object):
         if result.returncode:
             message = f"{directory} - {result.stderr.decode('utf-8')}"
             self.logger.error(message)
-            return {'success': False, 'data': message}
+            return {"success": False, "data": message}
 
         # process the result into a standard format
-        data = result.stdout.decode('utf-8')
-        return {'success': True, 'data': data}
+        data = result.stdout.decode("utf-8")
+        return {"success": True, "data": data}
 
     def _run(self, cmd, directory):
         try:
             with StatePath(directory):
-                return run(
-                    cmd, env=self.env, timeout=self.timeout,
-                    capture_output=True
-                )
+                return run(cmd, env=self.env, timeout=self.timeout, capture_output=True)
 
         except TimeoutExpired:
             return CompletedProcess(cmd, TIMEOUT_RETURN_CODE)
