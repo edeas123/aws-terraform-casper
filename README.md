@@ -3,6 +3,8 @@
 [![PyPI version](https://badge.fury.io/py/aws-terraform-casper.svg)](https://badge.fury.io/py/aws-terraform-casper)
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/aws-terraform-casper.svg)
 [![codecov](https://codecov.io/gh/edeas123/aws-terraform-casper/branch/master/graph/badge.svg)](https://codecov.io/gh/edeas123/aws-terraform-casper)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+
 
 Casper is a tool for detecting `ghosts` running on your AWS cloud environment. Ghosts are resources running on your cloud 
 environment but not provisioned through infrastructure as code (IaC) tools such as Terraform. Casper currently works only with AWS and Terraform.
