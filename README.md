@@ -1,6 +1,7 @@
 # Casper
 [![CircleCI](https://circleci.com/gh/edeas123/aws-terraform-casper.svg?style=svg&circle-token=5115202ddbba134358fefd5b36e34857cc2bbfe0)](https://circleci.com/gh/edeas123/aws-terraform-casper)
 [![PyPI version](https://badge.fury.io/py/aws-terraform-casper.svg)](https://badge.fury.io/py/aws-terraform-casper)
+![PyPI - Python Version](https://img.shields.io/pypi/pyversions/aws-terraform-casper.svg)
 [![codecov](https://codecov.io/gh/edeas123/aws-terraform-casper/branch/master/graph/badge.svg)](https://codecov.io/gh/edeas123/aws-terraform-casper)
 
 Casper is a tool for detecting `ghosts` running on your AWS cloud environment. Ghosts are resources running on your cloud 
@@ -17,7 +18,7 @@ Terraform to provision their AWS infrastructure. Running Casper on an empty terr
 ## Installation
 
 Install Casper by running:
-```
+```shell script
 pip install aws-terraform-casper
 ```
 
@@ -25,7 +26,9 @@ pip install aws-terraform-casper
 
 Run Casper using:
 
-`casper <sub_command> [options]`
+```shell script
+casper <sub_command> [options]`
+```
 
 Casper currently has two subcommands: `BUILD` and `SCAN`.
 

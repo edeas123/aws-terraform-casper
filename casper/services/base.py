@@ -2,6 +2,7 @@ import boto3
 import importlib
 import logging
 
+from abc import ABC, abstractmethod
 
 SUPPORTED_SERVICES = {
     'ec2': 'EC2Service',
@@ -10,7 +11,7 @@ SUPPORTED_SERVICES = {
 }
 
 
-class BaseService(object):
+class BaseService(ABC):
 
     def __init__(self, profile=None):
         self._resources_groups = {}
@@ -34,8 +35,9 @@ class BaseService(object):
 
         return None
 
+    @abstractmethod
     def scan_service(self, ghosts):
-        raise NotImplementedError
+        pass
 
 
 class UnsupportedServiceException(Exception):
