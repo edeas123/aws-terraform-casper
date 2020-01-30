@@ -31,7 +31,6 @@ import json
 import logging
 import logging.config
 
-
 from casper.services.base import SUPPORTED_SERVICES
 from casper import Casper
 
@@ -58,7 +57,6 @@ def _setup_logging(loglevel='INFO'):
 
     # add formatter to ch
     ch.setFormatter(formatter)
-
 
     # add ch to logger
     logger.addHandler(ch)

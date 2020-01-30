@@ -90,4 +90,3 @@ class TestMainCli(TestCase):
             scan_command=True, services_list=['abc', 'def'],
             state_file='terraform_state'
         )
- 
