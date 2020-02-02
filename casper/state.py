@@ -14,7 +14,7 @@ IGNORE_RESOURCE_GROUP = ("terraform_remote_state",)
 
 
 class CasperState:
-    def __init__(self, profile=None, bucket=None, state_file=None, load_state=False):
+    def __init__(self, profile=None, bucket=None, state_file=None):
 
         self.logger = logging.getLogger("casper")
         self.profile = profile
@@ -26,11 +26,7 @@ class CasperState:
         self.state_object = state_file
 
         self.command = TerraformCommand(profile=self.profile)
-
-        if load_state:
-            self._load_state()
-        else:
-            self.state_resources = {}
+        self.state_resources = None
 
         self._exclude_state_res = set()
         self._counter = {
@@ -53,6 +49,9 @@ class CasperState:
         if not exclude_state_res:
             exclude_state_res = set()
 
+        if self.state_resources is None:
+            self.state_resources = {}
+
         exclude_directories.update(IGNORE_PATHS)
         exclude_state_res.update(IGNORE_RESOURCE_GROUP)
         self._exclude_state_res = exclude_state_res
@@ -65,7 +64,7 @@ class CasperState:
                 self._list_state_resources(dirpath)
 
         # save state
-        self._save_state()
+        self.save_state()
 
         return self._counter
 
@@ -134,7 +133,7 @@ class CasperState:
                 break
         return is_state
 
-    def _save_state(self):
+    def save_state(self):
         if self.bucket:
             # save to s3 bucket
             self.logger.info("Saving state to s3 bucket ...")
@@ -147,11 +146,11 @@ class CasperState:
             except Exception as exc:
                 self.logger.error(exc)
                 self.logger.warning("Attempting to save state locally instead")
-                self._save_state_locally()
+                self.save_state_locally()
         else:
-            self._save_state_locally()
+            self.save_state_locally()
 
-    def _save_state_locally(self):
+    def save_state_locally(self):
         # save to current directory
         self.logger.info("Saving state to current directory ...")
         try:
@@ -162,7 +161,7 @@ class CasperState:
             self.logger.error(f"Unable to save casper state file. {exc}")
             sys.exit(1)
 
-    def _load_state(self):
+    def load_state(self):
         if self.bucket:
             # load from s3 bucket
             self.logger.info("Loading state from s3 bucket ...")
@@ -175,11 +174,11 @@ class CasperState:
             except Exception as exc:
                 self.logger.error(exc)
                 self.logger.warning("Attempting to load state locally instead")
-                self._load_state_locally()
+                self.load_state_locally()
         else:
-            self._load_state_locally()
+            self.load_state_locally()
 
-    def _load_state_locally(self):
+    def load_state_locally(self):
         # load from current directory
         self.logger.info("Loading state from current directory ...")
         try:

@@ -106,7 +106,6 @@ class TestEC2Service(TestCase):
 
         # setup
         ec2 = EC2Service()
-        ec2_client = boto3.client("ec2", region_name="us-east-1")
 
         # create required subnet
         subnets = self.create_subnet()

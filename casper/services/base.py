@@ -41,11 +41,11 @@ class UnsupportedServiceException(Exception):
 
 def get_service(service_name):
 
-    module = importlib.import_module(f"casper.services.{service_name}")
-    service_class = SUPPORTED_SERVICES.get(service_name, None)
-    if not service_class:
+    if service_name not in SUPPORTED_SERVICES:
         raise UnsupportedServiceException()
 
+    module = importlib.import_module(f"casper.services.{service_name}")
+    service_class = SUPPORTED_SERVICES.get(service_name, None)
     service = getattr(module, service_class)
 
     return service

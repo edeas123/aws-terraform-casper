@@ -81,6 +81,9 @@ def run(
     _setup_logging(loglevel=loglevel)
     logger = logging.getLogger("casper")
 
+    if exclude_cloud_res:
+        exclude_cloud_res = set(exclude_cloud_res)
+
     # casper object
     casper = Casper(
         start_directory=root_dir,
@@ -88,10 +91,16 @@ def run(
         state_file=state_file,
         profile=aws_profile,
         exclude_resources=exclude_cloud_res,
-        load_state=not build_command,
     )
 
     if build_command:
+
+        if exclude_state_res:
+            exclude_state_res = set(exclude_state_res)
+
+        if exclude_dirs:
+            exclude_dirs = set(exclude_dirs)
+
         counters = casper.build(
             exclude_state_res=exclude_state_res, exclude_directories=exclude_dirs
         )
