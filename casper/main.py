@@ -3,7 +3,7 @@ Casper.
 
 Usage:
     casper.py build [--root-dir=<dir> --bucket-name=<bn> --state-file=<sf> --aws-profile=<profile> --exclude-dirs=<ed> --exclude-state-res=<esr> --loglevel=<lvl>]
-    casper.py scan  [--root-dir=<dir> --bucket-name=<bn> --state-file=<sf> --aws-profile=<profile> --services=<svc> --exclude-cloud-res=<ecr> --rebuild --detailed --output-file=<f>  --loglevel=<lvl>]
+    casper.py scan  [--root-dir=<dir> --bucket-name=<bn> --state-file=<sf> --aws-profile=<profile> --services=<svc> --exclude-dirs=<ed> --exclude-cloud-res=<ecr> --rebuild --detailed --output-file=<f>  --loglevel=<lvl>]
     casper.py -h | --help
     casper.py --version
 

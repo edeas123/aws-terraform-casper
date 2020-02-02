@@ -87,7 +87,7 @@ class TestMainCli(TestCase):
 
     def test_scan_with_rebuild(self, mock_docopt, mock_run):
 
-        test_args = ["scan", "--rebuild"]
+        test_args = ["scan", "--rebuild", "--exclude-dirs=.fakedir1,.fakedir2"]
         mock_docopt.return_value = docopt(doc, test_args)
 
         main.cli()
@@ -97,7 +97,7 @@ class TestMainCli(TestCase):
             build_command=True,
             detailed=False,
             exclude_cloud_res=None,
-            exclude_dirs=None,
+            exclude_dirs=[".fakedir1", ".fakedir2"],
             exclude_state_res=None,
             loglevel="INFO",
             output_file=None,
@@ -151,7 +151,10 @@ class TestMainRun(TestCase):
 
         test_args = ["scan", "--services=ec2,iam"]
         mock_docopt.return_value = docopt(doc, test_args)
-
+        mock_scan.side_effect = [
+            {"aws_instance": {"count": 1, "ids": ["test_instance"]}},
+            {"iam_role": {"count": 2, "ids": ["test_role", "fake_role"]}},
+        ]
         main.cli()
 
         mock_build.assert_not_called()
