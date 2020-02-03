@@ -3,7 +3,7 @@ Casper.
 
 Usage:
     casper.py build [--root-dir=<dir> --bucket-name=<bn> --state-file=<sf> --aws-profile=<profile> --exclude-dirs=<ed> --exclude-state-res=<esr> --loglevel=<lvl>]
-    casper.py scan  [--root-dir=<dir> --bucket-name=<bn> --state-file=<sf> --aws-profile=<profile> --services=<svc> --exclude-cloud-res=<ecr> --rebuild --detailed --output-file=<f>  --loglevel=<lvl>]
+    casper.py scan  [--root-dir=<dir> --bucket-name=<bn> --state-file=<sf> --aws-profile=<profile> --services=<svc> --exclude-dirs=<ed> --exclude-cloud-res=<ecr> --rebuild --detailed --output-file=<f>  --loglevel=<lvl>]
     casper.py -h | --help
     casper.py --version
 
@@ -32,7 +32,7 @@ import logging
 import logging.config
 
 from casper.services.base import SUPPORTED_SERVICES
-from casper import Casper
+from casper import Casper, version
 
 
 def _setup_logging(loglevel="INFO"):
@@ -81,6 +81,9 @@ def run(
     _setup_logging(loglevel=loglevel)
     logger = logging.getLogger("casper")
 
+    if exclude_cloud_res:
+        exclude_cloud_res = set(exclude_cloud_res)
+
     # casper object
     casper = Casper(
         start_directory=root_dir,
@@ -88,10 +91,16 @@ def run(
         state_file=state_file,
         profile=aws_profile,
         exclude_resources=exclude_cloud_res,
-        load_state=not build_command,
     )
 
     if build_command:
+
+        if exclude_state_res:
+            exclude_state_res = set(exclude_state_res)
+
+        if exclude_dirs:
+            exclude_dirs = set(exclude_dirs)
+
         counters = casper.build(
             exclude_state_res=exclude_state_res, exclude_directories=exclude_dirs
         )
@@ -148,6 +157,11 @@ def cli():
 
     # get the commandline arguments
     args = docopt(__doc__)
+
+    # return version
+    if args["--version"]:
+        print(f"Casper v{version.__version__}")
+        return
 
     # parse arguments
     build_command = args["build"]

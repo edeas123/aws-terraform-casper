@@ -9,48 +9,50 @@ class Casper(object):
         self,
         start_directory: str = None,
         bucket_name: str = None,
-        state_file: str = "terraform_state",
+        state_file: str = None,
         profile: str = None,
-        exclude_resources: list = None,
-        load_state: bool = False,
+        exclude_resources: set = None,
     ):
 
         if start_directory is None or start_directory == ".":
             start_directory = os.getcwd()
 
         if exclude_resources is None:
-            exclude_resources = []
-
+            exclude_resources = set()
         self.exclude_resources = exclude_resources
+
         self.start_dir = start_directory
         self.profile = profile
-
+        self.state_file = state_file
         self.bucket = bucket_name
 
-        self.state = CasperState(
-            profile=self.profile,
-            bucket=self.bucket,
-            state_file=state_file,
-            load_state=load_state,
+        self.casper_state = CasperState(
+            profile=self.profile, bucket=self.bucket, state_file=self.state_file,
         )
+
         self.logger = logging.getLogger("casper")
 
-    def build(self, exclude_directories=None, exclude_state_res=None):
+    def build(self, exclude_directories: set = None, exclude_state_res: set = None):
         self.logger.info("Building states...")
 
-        return self.state.build_state_resources(
+        state_info = self.casper_state.build_state_resources(
             start_dir=self.start_dir,
             exclude_directories=exclude_directories,
             exclude_state_res=exclude_state_res,
         )
 
+        return state_info
+
     def scan(self, service_name, detailed=False):
+        if self.casper_state.state_resources is None:
+            # build was not run, load from file
+            self.casper_state.load_state()
 
         self.logger.info(f"Scanning {service_name.upper()} service...")
         service = get_service(service_name)
         cloud_service = service(profile=self.profile)
 
-        terraformed_resources = self.state.state_resources
+        terraformed_resources = self.casper_state.state_resources
 
         ghosts = {}
         for resource_group in cloud_service.resources_groups:

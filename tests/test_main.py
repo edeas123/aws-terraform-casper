@@ -87,7 +87,7 @@ class TestMainCli(TestCase):
 
     def test_scan_with_rebuild(self, mock_docopt, mock_run):
 
-        test_args = ["scan", "--rebuild"]
+        test_args = ["scan", "--rebuild", "--exclude-dirs=.fakedir1,.fakedir2"]
         mock_docopt.return_value = docopt(doc, test_args)
 
         main.cli()
@@ -97,7 +97,7 @@ class TestMainCli(TestCase):
             build_command=True,
             detailed=False,
             exclude_cloud_res=None,
-            exclude_dirs=None,
+            exclude_dirs=[".fakedir1", ".fakedir2"],
             exclude_state_res=None,
             loglevel="INFO",
             output_file=None,
@@ -135,29 +135,37 @@ class TestMainRun(TestCase):
     @patch.object(Casper, "scan")
     @patch.object(Casper, "build")
     def test_run_build(self, mock_build, mock_scan, mock_docopt):
-        test_args = ["build", "--exclude-state-res=fake.state,unknown.state"]
+        test_args = [
+            "build",
+            "--exclude-state-res=fake.state,unknown.state",
+            "--exclude-dirs=fakedir1,fakedir2",
+        ]
         mock_docopt.return_value = docopt(doc, test_args)
 
         main.cli()
         mock_build.assert_called_with(
-            exclude_directories=None, exclude_state_res=["fake.state", "unknown.state"]
+            exclude_directories={"fakedir1", "fakedir2"},
+            exclude_state_res={"fake.state", "unknown.state"},
         )
         mock_scan.assert_not_called()
 
-    @patch.object(CasperState, "_load_state")
+    @patch.object(CasperState, "load_state")
     @patch.object(Casper, "scan")
     @patch.object(Casper, "build")
     def test_run_scan(self, mock_build, mock_scan, _, mock_docopt):
 
         test_args = ["scan", "--services=ec2,iam"]
         mock_docopt.return_value = docopt(doc, test_args)
-
+        mock_scan.side_effect = [
+            {"aws_instance": {"count": 1, "ids": ["test_instance"]}},
+            {"iam_role": {"count": 2, "ids": ["test_role", "fake_role"]}},
+        ]
         main.cli()
 
         mock_build.assert_not_called()
         self.assertEqual(2, mock_scan.call_count)
 
-    @patch.object(CasperState, "_load_state")
+    @patch.object(CasperState, "load_state")
     @patch.object(Casper, "scan")
     @patch.object(Casper, "build")
     def test_run_scan_all_supported_services(
@@ -170,7 +178,7 @@ class TestMainRun(TestCase):
 
         self.assertEqual(len(SUPPORTED_SERVICES), mock_scan.call_count)
 
-    @patch.object(CasperState, "_load_state")
+    @patch.object(CasperState, "load_state")
     @patch.object(Casper, "scan")
     @patch.object(Casper, "build")
     def test_run_scan_with_fake_service(self, mock_build, mock_scan, _, mock_docopt):
@@ -181,7 +189,7 @@ class TestMainRun(TestCase):
 
         self.assertEqual(1, mock_scan.call_count)
 
-    @patch.object(CasperState, "_load_state")
+    @patch.object(CasperState, "load_state")
     @patch.object(Casper, "scan")
     @patch.object(Casper, "build")
     def test_run_scan_with_all_fake_service(
@@ -194,7 +202,7 @@ class TestMainRun(TestCase):
 
         self.assertEqual(0, mock_scan.call_count)
 
-    @patch.object(CasperState, "_load_state")
+    @patch.object(CasperState, "load_state")
     @patch.object(Casper, "scan")
     def test_run_scan_with_output_file(self, mock_scan, _, mock_docopt):
         testfile = "testjson.txt"

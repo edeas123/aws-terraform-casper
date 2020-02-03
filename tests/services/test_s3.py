@@ -2,7 +2,7 @@ from unittest import TestCase
 from moto import mock_s3
 from casper.services.s3 import S3Service
 from casper.services.base import get_service, BaseService
-from tests.services.fixture import aws_credentials
+from tests.utils import aws_credentials
 
 import boto3
 import pytest
