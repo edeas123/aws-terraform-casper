@@ -215,7 +215,9 @@ class TestState(TestCase):
 
         state = CasperState(bucket=bucket)
         test_data = {"test": "me2"}
-        conn.put_object(Bucket=state.bucket, Key=state.state_object, Body=json.dumps(test_data))
+        conn.put_object(
+            Bucket=state.bucket, Key=state.state_object, Body=json.dumps(test_data)
+        )
 
         state.load_state()
         self.assertEqual(test_data, state.state_resources)

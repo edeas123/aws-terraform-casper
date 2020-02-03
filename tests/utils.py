@@ -42,6 +42,7 @@ def create_autoscaling_group(name, instance_id, subnet, count):
         InstanceId=instance_id,
     )
 
+
 def load_sample(filename):
     filepath = os.path.join(os.getcwd(), "tests", "samples", filename)
     with open(filepath, "r") as fid:
