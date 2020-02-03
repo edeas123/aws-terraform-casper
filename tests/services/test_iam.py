@@ -3,7 +3,7 @@ from moto import mock_iam
 from casper.services.iam import IAMService
 from casper.services.base import get_service, BaseService
 
-from tests.services.fixture import aws_credentials
+from tests.utils import aws_credentials
 
 import boto3
 import json

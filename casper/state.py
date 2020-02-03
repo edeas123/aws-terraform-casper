@@ -23,7 +23,10 @@ class CasperState:
             self.session = boto3.Session(profile_name=profile)
 
         self.bucket = bucket
-        self.state_object = state_file
+
+        self.state_object = "terraform_state"
+        if state_file:
+            self.state_object = state_file
 
         self.command = TerraformCommand(profile=self.profile)
         self.state_resources = None

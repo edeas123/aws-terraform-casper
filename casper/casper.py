@@ -9,7 +9,7 @@ class Casper(object):
         self,
         start_directory: str = None,
         bucket_name: str = None,
-        state_file: str = "terraform_state",
+        state_file: str = None,
         profile: str = None,
         exclude_resources: set = None,
     ):

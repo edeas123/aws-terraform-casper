@@ -4,9 +4,14 @@ from casper.state import CasperState
 from unittest.mock import patch
 import os
 import shutil
+import pytest
+import boto3
+import json
+
+from moto import mock_s3
+from tests.utils import aws_credentials, load_sample
 
 
-@patch("casper.terraform.TerraformCommand.run_command")
 class TestState(TestCase):
     root_dir = "temp"
 
@@ -23,6 +28,7 @@ class TestState(TestCase):
         self.state = CasperState()
         self._make_dir(self.root_dir)
 
+    @patch("casper.terraform.TerraformCommand.run_command")
     @patch.object(CasperState, "save_state")
     def test_build_state_resources_state_management(self, mock_save, cmd):
         self._make_dir(os.path.join(self.root_dir, "main"))
@@ -46,6 +52,7 @@ class TestState(TestCase):
         )
         mock_save.assert_called_once()
 
+    @patch("casper.terraform.TerraformCommand.run_command")
     @patch.object(CasperState, "save_state")
     def test_build_state_resource_state_management_exclude_specific_dir(self, _, cmd):
         self._make_dir(os.path.join(self.root_dir, "main"))
@@ -67,6 +74,7 @@ class TestState(TestCase):
             "unexcluded directory with a .tf file",
         )
 
+    @patch("casper.terraform.TerraformCommand.run_command")
     @patch.object(CasperState, "save_state")
     def test_build_state_resources_exclude_specific_state_resource(self, _, cmd):
         self._make_dir(os.path.join(self.root_dir, "main"))
@@ -90,6 +98,7 @@ class TestState(TestCase):
             {"aws_alb": ["test-lb"],}, self.state.state_resources,
         )
 
+    @patch("casper.terraform.TerraformCommand.run_command")
     @patch.object(CasperState, "save_state")
     def test_build_state_resources(self, _, cmd):
         self._make_dir(os.path.join(self.root_dir, "main"))
@@ -117,6 +126,7 @@ class TestState(TestCase):
             self.state.state_resources,
         )
 
+    @patch("casper.terraform.TerraformCommand.run_command")
     @patch.object(CasperState, "save_state")
     @patch("logging.Logger.warning")
     def test_build_state_resources_removed_resource(self, logger, _, cmd):
@@ -139,6 +149,7 @@ class TestState(TestCase):
             "'aws_instance.empty' no longer exist in the state: temp/main"
         )
 
+    @patch("casper.terraform.TerraformCommand.run_command")
     @patch.object(CasperState, "save_state")
     @patch("logging.Logger.debug")
     def test_build_state_resources_unsupported_resource(self, logger, _, cmd):
@@ -161,13 +172,69 @@ class TestState(TestCase):
             "State Handler for fake_unsupported_resource is not currently supported"
         )
 
+    @mock_s3
+    @pytest.mark.usefixtures("aws_credentials")
+    def test_save_state_s3(self):
+        bucket = "Test"
+        conn = boto3.resource("s3")
+        conn.create_bucket(Bucket=bucket)
+
+        state = CasperState(bucket=bucket)
+        test_data = {"test": "me"}
+        state.state_resources = test_data
+        state.save_state()
+
+        obj = conn.Object(state.bucket, state.state_object)
+        data = json.loads(obj.get()["Body"].read())
+
+        self.assertEqual(test_data, data)
+
+    @mock_s3
+    @pytest.mark.usefixtures("aws_credentials")
+    def test_save_state_local_failback(self):
+        bucket = "Test"
+        state = CasperState(bucket=bucket)
+        test_data = {"test": "me"}
+        state.state_resources = test_data
+        state.save_state()
+
+        with open(state.state_object, "r") as fid:
+            data = fid.read()
+            data = json.loads(data)
+
+        self.assertEqual(test_data, data)
+        if os.path.exists(state.state_object):
+            os.remove(state.state_object)
+
+    @mock_s3
+    @pytest.mark.usefixtures("aws_credentials")
+    def test_load_state_s3(self):
+        bucket = "Test"
+        conn = boto3.client("s3", region_name="us-east-1")
+        conn.create_bucket(Bucket=bucket)
+
+        state = CasperState(bucket=bucket)
+        test_data = {"test": "me2"}
+        conn.put_object(Bucket=state.bucket, Key=state.state_object, Body=json.dumps(test_data))
+
+        state.load_state()
+        self.assertEqual(test_data, state.state_resources)
+
+    @mock_s3
+    @pytest.mark.usefixtures("aws_credentials")
+    def test_load_state_local_failback(self):
+        bucket = "Test"
+        state = CasperState(bucket=bucket)
+        test_data = {"test": "me2"}
+
+        with open(state.state_object, "w+") as fid:
+            fid.write(json.dumps(test_data))
+
+        state.load_state()
+        self.assertEqual(test_data, state.state_resources)
+
+        if os.path.exists(state.state_object):
+            os.remove(state.state_object)
+
     def tearDown(self):
         shutil.rmtree(self.root_dir, ignore_errors=True)
-
-
-def load_sample(filename):
-    filepath = os.path.join(os.getcwd(), "tests", "samples", filename)
-    with open(filepath, "r") as fid:
-        sample = fid.read()
-
-    return sample

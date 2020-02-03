@@ -3,7 +3,7 @@ from moto import mock_ec2, mock_elbv2, mock_autoscaling, mock_elb
 from casper.services.ec2 import EC2Service
 from casper.services.base import get_service, BaseService
 
-from tests.services.fixture import aws_credentials
+from tests.utils import aws_credentials, create_subnet, create_static_instances
 
 import pytest
 import boto3
@@ -16,30 +16,11 @@ class TestEC2Service(TestCase):
         self.assertTrue(issubclass(get_service(test_service), BaseService))
         self.assertTrue(isinstance(get_service(test_service)(), EC2Service))
 
-    @staticmethod
-    def create_subnet():
-        # create the required subnets
-        ec2_client = boto3.client("ec2", region_name="us-east-1")
-        subnets = [
-            subnet["SubnetId"] for subnet in ec2_client.describe_subnets()["Subnets"]
-        ]
-
-        return subnets
-
-    @staticmethod
-    def create_static_instances(count):
-        ec2_client = boto3.client("ec2", region_name="us-east-1")
-        instances = ec2_client.run_instances(
-            ImageId="ami-04b9e92b5572fa0d1", MaxCount=count, MinCount=count
-        )
-
-        return instances["Instances"]
-
     @mock_ec2
     @mock_elbv2
     def test_get_cloud_resources_aws_alb(self):
 
-        subnets = self.create_subnet()
+        subnets = create_subnet()
         elb_client = boto3.client("elbv2", region_name="us-east-1")
 
         # create 200 albs
@@ -108,11 +89,11 @@ class TestEC2Service(TestCase):
         ec2 = EC2Service()
 
         # create required subnet
-        subnets = self.create_subnet()
+        subnets = create_subnet()
 
         # launch 200 static ec2 instances
         count = 200
-        instances = self.create_static_instances(count)
+        instances = create_static_instances(count)
 
         # launch 300 autoscaled (dynamic) instances
         autoscaling_client = boto3.client("autoscaling", region_name="us-east-1")
@@ -137,8 +118,8 @@ class TestEC2Service(TestCase):
     @mock_autoscaling
     def test_get_cloud_resources_aws_autoscaling_group(self):
 
-        subnets = self.create_subnet()
-        instances = self.create_static_instances(1)
+        subnets = create_subnet()
+        instances = create_static_instances(1)
 
         autoscaling_client = boto3.client("autoscaling", region_name="us-east-1")
 

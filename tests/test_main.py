@@ -135,12 +135,17 @@ class TestMainRun(TestCase):
     @patch.object(Casper, "scan")
     @patch.object(Casper, "build")
     def test_run_build(self, mock_build, mock_scan, mock_docopt):
-        test_args = ["build", "--exclude-state-res=fake.state,unknown.state"]
+        test_args = [
+            "build",
+            "--exclude-state-res=fake.state,unknown.state",
+            "--exclude-dirs=fakedir1,fakedir2",
+        ]
         mock_docopt.return_value = docopt(doc, test_args)
 
         main.cli()
         mock_build.assert_called_with(
-            exclude_directories=None, exclude_state_res={"fake.state", "unknown.state"}
+            exclude_directories={"fakedir1", "fakedir2"},
+            exclude_state_res={"fake.state", "unknown.state"},
         )
         mock_scan.assert_not_called()
 
