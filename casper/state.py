@@ -147,8 +147,7 @@ class CasperState:
                     fid.flush()
                     s3_client.upload_file(fid.name, self.bucket, self.state_object)
             except Exception as exc:
-                self.logger.error(exc)
-                self.logger.warning("Attempting to save state locally instead")
+                self.logger.warning(f"{exc}. Attempting to save state locally instead")
                 self.save_state_locally()
         else:
             self.save_state_locally()
@@ -156,13 +155,9 @@ class CasperState:
     def save_state_locally(self):
         # save to current directory
         self.logger.info("Saving state to current directory ...")
-        try:
-            with open(self.state_object, "w+") as fid:
-                fid.write(json.dumps(self.state_resources))
-                fid.flush()
-        except Exception as exc:
-            self.logger.error(f"Unable to save casper state file. {exc}")
-            sys.exit(1)
+        with open(self.state_object, "w+") as fid:
+            fid.write(json.dumps(self.state_resources))
+            fid.flush()
 
     def load_state(self):
         if self.bucket:
@@ -175,8 +170,7 @@ class CasperState:
 
                 self.state_resources = json.loads(data)
             except Exception as exc:
-                self.logger.error(exc)
-                self.logger.warning("Attempting to load state locally instead")
+                self.logger.warning(f"{exc}. Attempting to load state locally instead")
                 self.load_state_locally()
         else:
             self.load_state_locally()
@@ -184,18 +178,9 @@ class CasperState:
     def load_state_locally(self):
         # load from current directory
         self.logger.info("Loading state from current directory ...")
-        try:
-            with open(self.state_object, "r") as fid:
-                data = fid.read()
-                self.state_resources = json.loads(data)
-        except FileNotFoundError:
-            self.logger.error(
-                f"Unable to find local casper state file: {self.state_object}"
-            )
-            sys.exit(1)
-        except Exception as exc:
-            self.logger.error(f"Unknown Exception: {exc}")
-            sys.exit(1)
+        with open(self.state_object, "r") as fid:
+            data = fid.read()
+            self.state_resources = json.loads(data)
 
     @staticmethod
     def _get_field(field, resource):

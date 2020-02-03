@@ -46,7 +46,6 @@ class Casper(object):
     def scan(self, service_name, detailed=False):
         if self.casper_state.state_resources is None:
             # build was not run, load from file
-            self.logger.debug(f"Loading casper state from file (default) or s3...")
             self.casper_state.load_state()
 
         self.logger.info(f"Scanning {service_name.upper()} service...")

@@ -32,7 +32,7 @@ import logging
 import logging.config
 
 from casper.services.base import SUPPORTED_SERVICES
-from casper import Casper
+from casper import Casper, version
 
 
 def _setup_logging(loglevel="INFO"):
@@ -157,6 +157,11 @@ def cli():
 
     # get the commandline arguments
     args = docopt(__doc__)
+
+    # return version
+    if args["--version"]:
+        print(f"Casper v{version.__version__}")
+        return
 
     # parse arguments
     build_command = args["build"]
