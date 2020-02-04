@@ -3,6 +3,7 @@ import importlib
 import logging
 
 from abc import ABC, abstractmethod
+from casper.resource import ResourceGroupManager
 
 SUPPORTED_SERVICES = {"ec2": "EC2Service", "iam": "IAMService", "s3": "S3Service"}
 
@@ -12,6 +13,7 @@ class BaseService(ABC):
         self._resources_groups = {}
         self.session = boto3.Session()
         self.logger = logging.getLogger("casper")
+        self.resources_group_manager = ResourceGroupManager()
 
         if profile:
             self.session = boto3.Session(profile_name=profile)
@@ -21,9 +23,9 @@ class BaseService(ABC):
         return self._resources_groups
 
     def get_cloud_resources(self, group):
-        handler = getattr(self, f"_get_live_{group}", None)
+        handler = self.resources_group_manager.get_resource_handler(group)
         if handler:
-            return handler()
+            return handler().get_cloud_resource()
         else:
             message = f"Service Handler for {group} is not currently supported"
             self.logger.debug(message)
