@@ -1,12 +1,11 @@
-import re
 import boto3
 import json
 import tempfile
 import logging
-import sys
 import os
 
 from casper.terraform import TerraformCommand
+from casper.resource import ResourceGroupManager
 
 
 IGNORE_PATHS = (".git", ".terraform")
@@ -37,10 +36,7 @@ class CasperState:
             "resource": 0,
             "resource_group": 0,
         }
-        self._resource_group_remap = {
-            "aws_spot_instance_request": "aws_instance",
-            "aws_lb": "aws_alb",
-        }
+        self.resource_group_manager = ResourceGroupManager()
 
     def build_state_resources(
         self, start_dir=".", exclude_directories=None, exclude_state_res=None
@@ -87,10 +83,7 @@ class CasperState:
                     resource_id = self._get_state_resource(state_directory, resource)
                     if resource_id:
                         self._counter["resource"] += 1
-                        resource_group_tag = self._resource_group_remap.get(
-                            resource_group, resource_group
-                        )
-
+                        resource_group_tag = self.resource_group_manager.get_name(resource_group)
                         if self.state_resources.get(resource_group_tag, None):
                             self.state_resources[resource_group_tag].append(resource_id)
                         else:
@@ -117,9 +110,10 @@ class CasperState:
         return resource_id
 
     def _process_response(self, group, text):
-        handler = getattr(self, f"_get_state_{group}", None)
-        if handler:
-            return handler(text)
+        resource_handler = self.resource_group_manager.get_resource_handler(group)
+        if resource_handler:
+            resource_id = resource_handler().get_state_resource(text)
+            return resource_id
         else:
             message = f"State Handler for {group} is not currently supported"
             self.logger.debug(message)
@@ -181,40 +175,3 @@ class CasperState:
         with open(self.state_object, "r") as fid:
             data = fid.read()
             self.state_resources = json.loads(data)
-
-    @staticmethod
-    def _get_field(field, resource):
-        pattern = f"(\\n|^)({field}\\s+.*?)(\\n)"
-        match = re.search(pattern, resource)[0]
-        value = match.split("=")[1].strip()
-        return value
-
-    def _get_state_aws_instance(self, text):
-        return self._get_field("id", text)
-
-    def _get_state_aws_autoscaling_group(self, text):
-        return self._get_field("id", text)
-
-    def _get_state_aws_spot_instance_request(self, text):
-        return self._get_field("spot_instance_id", text)
-
-    def _get_state_aws_security_group(self, text):
-        return self._get_field("id", text)
-
-    def _get_state_aws_s3_bucket(self, text):
-        return self._get_field("id", text)
-
-    def _get_state_aws_iam_user(self, text):
-        return self._get_field("id", text)
-
-    def _get_state_aws_iam_role(self, text):
-        return self._get_field("id", text)
-
-    def _get_state_aws_elb(self, text):
-        return self._get_field("name", text)
-
-    def _get_state_aws_alb(self, text):
-        return self._get_field("name", text)
-
-    def _get_state_aws_lb(self, text):
-        return self._get_field("name", text)
