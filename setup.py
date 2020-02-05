@@ -27,6 +27,8 @@ setuptools.setup(
         "Programming Language :: Python :: 3.7",
         "License :: OSI Approved :: Mozilla Public License 2.0 (MPL 2.0)",
         "Operating System :: OS Independent",
+        "Development Status :: 4 - Beta",
+        "Intended Audience :: Developers",
     ],
     install_requires=["boto3>=1.10.41", "docopt>=0.6.2"],
     python_requires=">=3.6",

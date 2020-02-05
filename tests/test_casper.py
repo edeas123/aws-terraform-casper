@@ -3,7 +3,7 @@ from unittest.mock import patch
 from casper import Casper
 from casper import CasperState
 
-from casper.services.base import SUPPORTED_SERVICES
+from casper.services import get_supported_services
 from tests.utils import (
     aws_credentials,
     create_subnet,
@@ -91,7 +91,7 @@ class TestCasper(TestCase):
             },
         }
 
-        for svc in SUPPORTED_SERVICES:
+        for svc in get_supported_services():
             ghosts = casper.scan(svc)
             for keys in ghosts:
                 self.assertEqual(
@@ -126,7 +126,7 @@ class TestCasper(TestCase):
         casper.casper_state = mock_casper_state
         mock_casper_state.state_resources = {}
 
-        for svc in SUPPORTED_SERVICES:
+        for svc in get_supported_services():
             ghosts = casper.scan(svc, detailed=True)
             print(ghosts)
             for resource_group in ghosts:

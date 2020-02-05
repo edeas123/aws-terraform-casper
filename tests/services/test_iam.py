@@ -1,8 +1,6 @@
 from unittest import TestCase
 from moto import mock_iam
 from casper.services.iam import IAMService
-from casper.services.base import get_service, BaseService
-
 from tests.utils import aws_credentials
 
 import boto3
@@ -16,11 +14,6 @@ class TestIAMService(TestCase):
     def setUp(self) -> None:
         self.iam = IAMService()
         self.conn = boto3.resource("iam")
-
-    def test_get_service(self):
-        test_service = "iam"
-        self.assertTrue(issubclass(get_service(test_service), BaseService))
-        self.assertTrue(isinstance(get_service(test_service)(), IAMService))
 
     def test_get_cloud_resources_aws_iam_user(self):
 

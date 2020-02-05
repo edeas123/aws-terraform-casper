@@ -108,20 +108,25 @@ class TestState(TestCase):
             {"success": True, "data": load_sample("state.txt")},
             {"success": True, "data": load_sample("aws_spot_instance_request.txt")},
             {"success": True, "data": load_sample("aws_instance.txt")},
+            {"success": True, "data": load_sample("aws_instance_v12.txt")},
             {"success": True, "data": load_sample("aws_lb.txt")},
         ]
 
         self.state.build_state_resources(start_dir=self.root_dir)
         self.assertEqual(
-            4,
+            5,
             cmd.call_count,
             "Should be called three times, 1 to list the resource in the "
-            "state, the other to show the three resource in the state",
+            "state, the other to show the four resource in the state",
         )
         self.assertEqual(
             {
                 "aws_alb": ["test-lb"],
-                "aws_instance": ["i-0101522650aeaa2dd", "i-084699b83473e2c69"],
+                "aws_instance": [
+                    "i-0101522650aeaa2dd",
+                    "i-084699b83473e2c69",
+                    "i-01d41824bd284ff13",
+                ],
             },
             self.state.state_resources,
         )

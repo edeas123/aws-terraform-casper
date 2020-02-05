@@ -1,0 +1,44 @@
+# aws_instance.testv12:
+resource "aws_instance" "testv12" {
+    [1m[0mami[0m[0m                          = "ami-0653e888ec96eab9b"
+    [1m[0massociate_public_ip_address[0m[0m  = true
+    [1m[0mavailability_zone[0m[0m            = "us-east-2a"
+    [1m[0mcpu_core_count[0m[0m               = 1
+    [1m[0mcpu_threads_per_core[0m[0m         = 2
+    [1m[0mdisable_api_termination[0m[0m      = false
+    [1m[0mebs_optimized[0m[0m                = false
+    [1m[0mget_password_data[0m[0m            = false
+    [1m[0miam_instance_profile[0m[0m         = "core-dev-tower"
+    [1m[0mid[0m[0m                           = "i-01d41824bd284ff13"
+    [1m[0minstance_state[0m[0m               = "running"
+    [1m[0minstance_type[0m[0m                = "r3.large"
+    [1m[0mipv6_address_count[0m[0m           = 0
+    [1m[0mipv6_addresses[0m[0m               = []
+    [1m[0mkey_name[0m[0m                     = "deployer"
+    [1m[0mmonitoring[0m[0m                   = false
+    [1m[0msecurity_groups[0m[0m              = []
+    [1m[0msource_dest_check[0m[0m            = true
+    [1m[0msubnet_id[0m[0m                    = "subnet-2d103845"
+    [1m[0mtenancy[0m[0m                      = "default"
+    [1m[0mvolume_tags[0m[0m                  = {}
+    [1m[0mvpc_security_group_ids[0m[0m       = [
+        "sg-04cb9ae77469e1543",
+        "sg-0dd9c161297736dc3",
+    ]
+
+    ephemeral_block_device {
+        [1m[0mdevice_name[0m[0m  = "/dev/xvdb"
+        [1m[0mno_device[0m[0m    = false
+        [1m[0mvirtual_name[0m[0m = "ephemeral0"
+    }
+
+    root_block_device {
+        [1m[0mdelete_on_termination[0m[0m = true
+        [1m[0miops[0m[0m                  = 100
+        [1m[0mvolume_id[0m[0m             = "vol-0da2b1b9c087d8c6c"
+        [1m[0mvolume_size[0m[0m           = 30
+        [1m[0mvolume_type[0m[0m           = "gp2"
+    }
+
+    timeouts {}
+}[0m[0m

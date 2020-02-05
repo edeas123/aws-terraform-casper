@@ -5,7 +5,7 @@ import logging
 import os
 
 from casper.terraform import TerraformCommand
-from casper.resource import ResourceGroupManager
+from casper.services import ResourceGroupManager
 
 
 IGNORE_PATHS = (".git", ".terraform")
@@ -59,7 +59,6 @@ class CasperState:
             dirnames[:] = [d for d in dirnames if d not in exclude_directories]
 
             if self._is_terraform_state(filenames):
-                self.logger.debug(f"In {dirpath}")
                 self._list_state_resources(dirpath)
 
         # save state
@@ -70,6 +69,7 @@ class CasperState:
     def _list_state_resources(self, state_directory=None):
 
         # calls terraform state list, formats and returns a list of the result
+        self.logger.debug(f"Listing state resource for directory: {state_directory}")
         r = self.command.run_command("terraform state list", directory=state_directory)
         if r["success"]:
             self._counter["state"] += 1
@@ -83,7 +83,9 @@ class CasperState:
                     resource_id = self._get_state_resource(state_directory, resource)
                     if resource_id:
                         self._counter["resource"] += 1
-                        resource_group_tag = self.resource_group_manager.get_name(resource_group)
+                        resource_group_tag = self.resource_group_manager.get_tag(
+                            resource_group
+                        )
                         if self.state_resources.get(resource_group_tag, None):
                             self.state_resources[resource_group_tag].append(resource_id)
                         else:
@@ -91,6 +93,7 @@ class CasperState:
                             self.state_resources[resource_group_tag] = [resource_id]
 
     def _get_state_resource(self, directory, resource_identifier):
+        self.logger.debug(f"Showing state resource for: {resource_identifier}")
 
         resource_id = None
         resource_group = resource_identifier.split(".")[-2]
@@ -110,13 +113,13 @@ class CasperState:
         return resource_id
 
     def _process_response(self, group, text):
+        self.logger.debug(f"Processing terraform show state response for {group}")
         resource_handler = self.resource_group_manager.get_resource_handler(group)
         if resource_handler:
             resource_id = resource_handler().get_state_resource(text)
             return resource_id
         else:
-            message = f"State Handler for {group} is not currently supported"
-            self.logger.debug(message)
+            self.logger.debug(f"State Handler for {group} is not currently supported")
             self._exclude_state_res.add(group)
 
         return None

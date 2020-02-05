@@ -1,4 +1,5 @@
 aws_spot_instance_request.test
 aws_instance.test
+aws_instance.testv12
 terraform_remote_state.test
 aws_alb.test
