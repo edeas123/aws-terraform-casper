@@ -31,7 +31,7 @@ import json
 import logging
 import logging.config
 
-from casper.services.base import SUPPORTED_SERVICES
+from casper.services import get_supported_services
 from casper import Casper, version
 
 
@@ -120,14 +120,15 @@ def run(
 
     if scan_command:
         # supported services
+        supported_services = get_supported_services()
         if services_list:
-            services = [s for s in services_list if s in SUPPORTED_SERVICES]
+            services = [s for s in services_list if s in supported_services]
             if len(services) == 0:
                 logger.warning("No supported service specified")
             elif len(services) < len(services_list):
                 logger.warning("Ignoring one or more unsupported services")
         else:
-            services = SUPPORTED_SERVICES.keys()
+            services = supported_services
 
         svc_ghost = {}
         for svc in services:

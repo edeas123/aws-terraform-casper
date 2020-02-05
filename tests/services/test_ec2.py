@@ -1,7 +1,6 @@
 from unittest import TestCase
 from moto import mock_ec2, mock_elbv2, mock_autoscaling, mock_elb
 from casper.services.ec2 import EC2Service
-from casper.services.base import get_service, BaseService
 
 from tests.utils import aws_credentials, create_subnet, create_static_instances
 
@@ -11,10 +10,6 @@ import boto3
 
 @pytest.mark.usefixtures("aws_credentials")
 class TestEC2Service(TestCase):
-    def test_get_service(self):
-        test_service = "ec2"
-        self.assertTrue(issubclass(get_service(test_service), BaseService))
-        self.assertTrue(isinstance(get_service(test_service)(), EC2Service))
 
     @mock_ec2
     @mock_elbv2
@@ -62,8 +57,8 @@ class TestEC2Service(TestCase):
 
         ec2_client = boto3.client("ec2", region_name="us-east-1")
 
-        # create 1000 security groups
-        count = 1000
+        # create 2000 security groups
+        count = 2000
         sg = []
         for i in range(count):
             sg.append(

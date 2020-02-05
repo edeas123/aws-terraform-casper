@@ -29,7 +29,7 @@ pip install aws-terraform-casper
 Run Casper using:
 
 ```shell script
-casper <sub_command> [options]`
+casper <sub_command> [options]
 ```
 
 Casper currently has two subcommands: `BUILD` and `SCAN`.

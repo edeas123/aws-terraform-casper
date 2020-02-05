@@ -3,7 +3,7 @@ from unittest.mock import patch
 from casper import main, Casper
 from casper.state import CasperState
 from docopt import docopt
-from casper.services.base import SUPPORTED_SERVICES
+from casper.services import get_supported_services
 
 import os
 
@@ -176,7 +176,7 @@ class TestMainRun(TestCase):
         main.cli()
         mock_build.assert_not_called()
 
-        self.assertEqual(len(SUPPORTED_SERVICES), mock_scan.call_count)
+        self.assertEqual(len(get_supported_services()), mock_scan.call_count)
 
     @patch.object(CasperState, "load_state")
     @patch.object(Casper, "scan")

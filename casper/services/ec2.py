@@ -1,19 +1,14 @@
-from casper.services.base import BaseService
+from casper.services import Service, Resource
 
 
-class EC2Service(BaseService):
-    def __init__(self, profile: str = None):
+class AwsAlbResource(Resource):
 
-        super().__init__(profile=profile)
-        self._resources_groups = [
-            "aws_instance",
-            "aws_autoscaling_group",
-            "aws_security_group",
-            "aws_alb",
-            "aws_elb",
-        ]
+    _tag = "aws_alb"
 
-    def _get_live_aws_alb(self):
+    def get_state_resource(self, text):
+        return self._get_field("name", text)
+
+    def get_cloud_resource(self):
         alb_client = self.session.client("elbv2")
         alb = alb_client.describe_load_balancers()
         lbs = {lb["LoadBalancerName"]: lb for lb in alb["LoadBalancers"]}
@@ -24,20 +19,16 @@ class EC2Service(BaseService):
 
         return lbs
 
-    def _get_live_aws_elb(self):
-        elb_client = self.session.client("elb")
-        elb = elb_client.describe_load_balancers()
-        lbs = {lb["LoadBalancerName"]: lb for lb in elb["LoadBalancerDescriptions"]}
 
-        while "NextMarker" in elb.keys():
-            elb = elb_client.describe_load_balancers(Marker=elb["NextMarker"])
-            lbs.update(
-                {lb["LoadBalancerName"]: lb for lb in elb["LoadBalancerDescriptions"]}
-            )
+class AwsLbResource(AwsAlbResource):
+    pass
 
-        return lbs
 
-    def _get_live_aws_instance(self):
+class AwsInstanceResource(Resource):
+
+    _tag = "aws_instance"
+
+    def get_cloud_resource(self):
 
         ec2_client = self.session.client("ec2")
         ec2 = ec2_client.describe_instances()
@@ -71,8 +62,44 @@ class EC2Service(BaseService):
 
         return static_instances
 
-    def _get_live_aws_autoscaling_group(self):
 
+class AwsSpotInstanceRequestResource(AwsInstanceResource):
+
+    _tag = "aws_instance"
+
+    def get_state_resource(self, text):
+        return self._get_field("spot_instance_id", text)
+
+
+class AwsElbResource(Resource):
+
+    _tag = "aws_elb"
+
+    def get_state_resource(self, text):
+        return self._get_field("name", text)
+
+    def get_cloud_resource(self):
+        elb_client = self.session.client("elb")
+        elb = elb_client.describe_load_balancers()
+        lbs = {lb["LoadBalancerName"]: lb for lb in elb["LoadBalancerDescriptions"]}
+
+        while "NextMarker" in elb.keys():
+            elb = elb_client.describe_load_balancers(Marker=elb["NextMarker"])
+            lbs.update(
+                {lb["LoadBalancerName"]: lb for lb in elb["LoadBalancerDescriptions"]}
+            )
+
+        return lbs
+
+
+class AwsAutoscalingGroupResource(Resource):
+
+    _tag = "aws_autoscaling_group"
+
+    def get_state_resource(self, text):
+        return self._get_field("name", text)
+
+    def get_cloud_resource(self):
         asg_client = self.session.client("autoscaling")
         asgs_group = asg_client.describe_auto_scaling_groups()
         asgs = {a["AutoScalingGroupName"]: a for a in asgs_group["AutoScalingGroups"]}
@@ -87,7 +114,12 @@ class EC2Service(BaseService):
 
         return asgs
 
-    def _get_live_aws_security_group(self):
+
+class AwsSecurityGroupResource(Resource):
+
+    _tag = "aws_security_group"
+
+    def get_cloud_resource(self):
         ec2_client = self.session.client("ec2")
 
         sgs_group = ec2_client.describe_security_groups()
@@ -100,6 +132,19 @@ class EC2Service(BaseService):
             sgs.update({sg["GroupId"]: sg for sg in sgs_group["SecurityGroups"]})
 
         return sgs
+
+
+class EC2Service(Service):
+    def __init__(self, profile: str = None):
+
+        super().__init__(profile=profile)
+        self._resources_groups = [
+            "aws_instance",
+            "aws_autoscaling_group",
+            "aws_security_group",
+            "aws_alb",
+            "aws_elb",
+        ]
 
     def scan_service(self, ghosts):
         def batch(iterable, n=1):

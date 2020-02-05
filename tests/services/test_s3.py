@@ -1,7 +1,6 @@
 from unittest import TestCase
 from moto import mock_s3
 from casper.services.s3 import S3Service
-from casper.services.base import get_service, BaseService
 from tests.utils import aws_credentials
 
 import boto3
@@ -10,10 +9,6 @@ import pytest
 
 @pytest.mark.usefixtures("aws_credentials")
 class TestS3Service(TestCase):
-    def test_get_service(self):
-        test_service = "s3"
-        self.assertTrue(issubclass(get_service(test_service), BaseService))
-        self.assertTrue(isinstance(get_service(test_service)(), S3Service))
 
     @mock_s3
     def test_get_cloud_resources_aws_s3_bucket(self):

@@ -1,5 +1,5 @@
 from casper.state import CasperState
-from casper.services.base import get_service
+from casper.services import get_service
 import os
 import logging
 

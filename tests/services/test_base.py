@@ -1,14 +1,15 @@
 from unittest import TestCase
 from unittest.mock import patch
 from casper.services.ec2 import EC2Service
-from casper.services.base import (
+from casper.services import (
     get_service,
     UnsupportedServiceException,
-    SUPPORTED_SERVICES,
+    get_supported_services,
+    Service
 )
 
 
-class TestBaseService(TestCase):
+class TestService(TestCase):
     def setUp(self) -> None:
         self.ec2 = EC2Service()
 
@@ -27,5 +28,8 @@ class TestBaseService(TestCase):
         self.assertRaises(UnsupportedServiceException, get_service, service_name)
 
     def test_get_all_supported_service(self):
-        for svc in SUPPORTED_SERVICES:
-            self.assertIsNotNone(get_service(svc))
+        for svc in get_supported_services():
+            service = get_service(svc)
+            self.assertTrue(issubclass(service, Service))
+            self.assertIsNotNone(service)
+
