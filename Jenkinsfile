@@ -20,8 +20,8 @@ pipeline {
 
     stage('Test') {
       steps {
-        sh '''PYTHONPATH=. pytest --cov=./casper
-codecov'''
+        sh 'PYTHONPATH=. pytest --cov=./casper'
+        sh 'codecov'
       }
     }
 
