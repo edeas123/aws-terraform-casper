@@ -7,26 +7,21 @@ pipeline {
   }
   stages {
     stage('install dependencies') {
-      parallel {
-        stage('install dependencies') {
-          steps {
-            sh 'pip install -r requirements.txt'
-          }
-        }
+      steps {
+        sh 'pip install -r requirements.txt'
+      }
+    }
 
-        stage('Install Test Dependencies') {
-          steps {
-            sh 'pip install pytest pytest-cov codecov'
-          }
-        }
+    stage('Install Test Dependencies') {
+      steps {
+        sh 'pip install pytest pytest-cov codecov'
+      }
+    }
 
-        stage('Test') {
-          steps {
-            sh '''PYTHONPATH=. pytest --cov=./casper
+    stage('Test') {
+      steps {
+        sh '''PYTHONPATH=. pytest --cov=./casper
 codecov'''
-          }
-        }
-
       }
     }
 
